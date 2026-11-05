@@ -164,6 +164,9 @@ These tools live on the organization `/mcp` endpoint, not `/c/<cluster-id>/mcp`.
 Discover them first; if absent, use the Cloud UI. `diagnose` collects evidence itself,
 while `start_investigation` starts a hosted AI investigator and can consume allowance.
 It starts with a resource assessment; arbitrary questions are follow-up turns.
+Start only when the person has requested or approved a hosted investigation; explain
+that it uses the shared organization allowance. An existing request to investigate
+is sufficient—do not ask again for the same authorized work.
 
 - Get `cluster` from `list_clusters`, then use `get_resource` to verify the exact target.
 - Call `start_investigation` with, for example,

@@ -49,7 +49,7 @@ Make the smallest change that removes the cause, push it, and follow the `ship` 
 
 ## 5. When it's not obvious
 
-Suggest the person start an AI investigation in Radar Cloud: open the failing resource at app.radarhq.io and click Investigate. It traces the failure to a root cause with evidence and changes nothing. Investigations are private unless the person shares them, and sharing shows them to every team in the org.
+Suggest a hosted AI investigation and explain that it uses the shared organization allowance. Once the person has requested or approved it, use the hosted tools if the organization-level `/mcp` connection advertises them; follow `examples/agent-workflows/README.md`. Otherwise the person can open the resource at app.radarhq.io and click Investigate. Verify its findings against primary evidence and apply app fixes through git. Human-started investigations are private unless the person shares them; sharing shows them to every team in the org.
 
 ## Report
 
