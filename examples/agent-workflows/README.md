@@ -119,8 +119,8 @@ organization's separate visibility policy; MCP only reads your own runs.
 
 `wait_for` may report `blocked` (for example, scheduling or quota prevents progress).
 Read its reason and relevant events before retrying. `curl_service` requires
-in-cluster Radar, a selector-backed Service with a ClusterIP (not headless), exec
-tools enabled by the operator, and `get services/proxy` on
+in-cluster Radar, a selector-backed Service with a ClusterIP (not headless), HTTP
+tools enabled by the operator (`--mcp-http-tools` or Helm `mcp.httpTools: true`), and `get services/proxy` on
 the target Service. Without auth, that grant must belong to Radar's ServiceAccount.
 The default Radar chart does not grant it.
 
@@ -166,7 +166,8 @@ The image tag is the first seven characters of the app commit that triggered
 ## Delegate a real question to hosted AI SRE
 
 These tools live on the organization `/mcp` endpoint, not `/c/<cluster-id>/mcp`.
-Discover them first; if absent, use the Cloud UI. `diagnose` collects evidence itself,
+Discover `start_investigation` first; if absent, use the Cloud UI. Read/list/stop
+may still be available when new starts are disabled. `diagnose` collects evidence itself,
 while `start_investigation` starts a hosted AI investigator and can consume allowance.
 It starts with a resource assessment; arbitrary questions are follow-up turns.
 Start only when the person has requested or approved a hosted investigation; explain
@@ -183,7 +184,7 @@ is sufficient—do not ask again for the same authorized work.
   Drain `has_more` pages. `has_more:false` only means currently saved events are drained.
 - Poll with a bounded interval/deadline. For status-only checks use `include_events:false`
   and omit `after`; never start a new investigation just to check progress.
-- Only ask `follow_up_investigation` when `canContinue:true`. Supply `question` and read
+- Only ask `follow_up_investigation` when it is advertised and `canContinue:true`. Supply `question` and read
   events after your saved cursor for the answer, usually in `done.diagnosis.report`.
   Saved `findings` can still be the prior assessment; don't present them as the new answer.
 - Stop through `stop_investigation` when appropriate, then poll until `done`, `error`,
@@ -192,3 +193,9 @@ is sufficient—do not ask again for the same authorized work.
 If disclosure or allowance blocks a start, surface the refusal. A human accepts
 organization disclosure in the UI; agents cannot do that or approve spending changes.
 All teams share the configured organization allowance and concurrency pool.
+
+Hosted investigation starts and follow-ups require the Hub operator to enable
+`HUB_MCP_INVESTIGATION_STARTS_ENABLED`. Read/list/stop may be advertised while
+starts are disabled. That switch uses the existing shared organization limits;
+it does not allocate a separate team budget. Use Radar Cloud's UI if starting
+through MCP is unavailable.
