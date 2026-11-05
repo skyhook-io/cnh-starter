@@ -25,7 +25,7 @@ Tell the person what you did before you go deeper.
 3. Call `diagnose` on the failing workload: `kind: deployment`, or `kind: rollout` with `group: argoproj.io`, and `name: app`. You get logs, events and startup blockers in one call. For a sync problem, diagnose `kind: application` with `group: argoproj.io`.
 4. If you need more:
    - `get_pod_logs` with `previous: true` gives the crash's own output;
-   - `get_events` covers scheduling, and the host's refusals (Warning `SyncError` on the pod);
+   - `get_events` covers scheduling, and the host's refusals and the budget (Warning `SyncError` on the pod);
    - `get_resource` on the Application (`status.conditions`, `status.operationState`) covers sync errors.
 
 ## 3. Common causes in this cluster
@@ -37,8 +37,8 @@ Tell the person what you did before you go deeper.
 | `OOMKilled`, exit 137 | The container passed `limits.memory` | Fix the app's memory use, or raise the limit in `deploy/` (the team's budget caps limits at 8 GiB in total) |
 | `CrashLoopBackOff` | The app exits at startup | `get_pod_logs` with `previous: true` |
 | Ready 0/N, readiness failing | The app isn't on `$PORT` (8080), or `/readyz` doesn't answer 200 | Fix the app, or the probe paths in `deploy/` |
-| Pod `Pending` with a Warning event `SyncError` | The host refused the pod; the event's message has the host's reason. Usually the pod asks for privileged, hostPath, hostNetwork or hostPID | Drop that setting (for a Helm chart, in its values). The host's rules don't bend |
-| An event says `exceeded quota` | Over the team's budget: 2 CPU / 4 GiB of requests, 4 CPU / 8 GiB of limits, in total | Lower `replicas` or `requests`, or remove something you installed |
+| Pod `Pending`, Warning `SyncError` saying `exceeded quota: team-quota` | Over the team's budget, one total across every namespace in the cluster: 2 CPU / 4 GiB of requests, 4 CPU / 8 GiB of limits | Lower `replicas` or `requests`, or remove something you installed |
+| Pod `Pending`, any other Warning `SyncError` | The host refused the pod: it asks for privileged, hostPath, hostNetwork or hostPID. The event's message has the host's reason | Drop that setting (for a Helm chart, in its values). The host's rules don't bend |
 | Old version still serving | Argo CD hasn't synced, or the sync failed | The `ship` skill, steps 2 and 3 |
 | URL 404 or 503, pods healthy | Service `app` in `team-<team>` is missing, renamed, not on port 80, or selects no ready pods. The platform routes the URL to that Service; the HTTPRoute in `deploy/` plays no part | `diagnose` the Service (`kind: service`, `name: app`) with `probe: true`, and fix it in `deploy/`. If the Service is fine, ask an organizer |
 | Sync fails: namespace not found, or `metadata.annotations: Too long` on a CRD | The Application needs `CreateNamespace=true` or `ServerSideApply=true`, and Radar's sync ignores the Application's own `syncOptions` | Add them to the Application's `syncOptions` and pass the same list as `sync_options` to `manage_gitops` sync |

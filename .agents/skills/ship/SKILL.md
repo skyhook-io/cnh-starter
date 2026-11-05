@@ -9,7 +9,7 @@ Deploys are GitOps: you push to `main`, the GitHub Action builds the image and c
 
 The team name is in `deploy/kustomization.yaml` (`namespace: team-<team>`). Radar Cloud lists the team's cluster as `<team>`. The namespace is `team-<team>`, the Argo CD Application is `app` in that namespace, and the URL is `https://<team>.cnh.radarhq.io`.
 
-**Every Radar MCP call below takes `cluster` and `namespace: team-<team>`.** Call `list_clusters` once, take the `id` of the entry whose `name` is exactly `<team>`, and pass it as `cluster`. The organization has about 40 team clusters plus `cnh`; a call without `cluster`, or with another cluster's id, doesn't reach this team's cluster.
+**Every Radar MCP call below takes `cluster` and `namespace: team-<team>`.** Call `list_clusters` once, take the `id` of the entry whose `name` is exactly `<team>`, and pass it as `cluster`. The organization has about 40 team clusters plus `cnh`, so the tools can't pick a default, and the person only has access to this team's cluster.
 
 ## 0. First time only
 

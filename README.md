@@ -4,13 +4,13 @@ Start here if your team has its own cluster at the hackathon: a virtual Kubernet
 
 ## Before you start
 
-Get your team's cluster at **join.cnh.radarhq.io** (the join code is on the Radar table and in the organizers' email), or at the Radar table. Once it's ready you have:
+Get your team's cluster at **join.cnh.radarhq.io** (the join code is on the Radar table and in the organizers' email), or at the Radar table. It takes 3 to 4 minutes; `join.cnh.radarhq.io/status/<team-name>` shows the progress and says when it's ready. Then you have:
 
 - your own cluster, named `<team-name>` in Radar Cloud,
 - this starter app already running in it, in namespace `team-<team-name>`, at `https://<team-name>.cnh.radarhq.io`,
 - an invite for each of you to the hackathon's organization in Radar Cloud. Accept it and sign in at [app.radarhq.io](https://app.radarhq.io).
 
-Every team is in the same Radar Cloud organization, so Radar Cloud lists every team's cluster, each under its team's name, plus `cnh`, the platform's own cluster, which teams can't use. Work only in yours. The member list, with emails, and any investigation you mark **Shared** are visible to every team. Investigations start private; keep them that way unless you mean to show every team. Alert notifications are off for the event, because they would go to everyone.
+Every team is in the same Radar Cloud organization, so Radar Cloud lists every team's cluster, each under its team's name, plus `cnh`, the platform's own cluster. You only have access to your own team's cluster. The member list, with emails, and any investigation you mark **Shared** are visible to every team. Investigations start private; keep them that way unless you mean to show every team. Alert notifications are off for the event, because they would go to everyone.
 
 ## Connect your agent
 
@@ -74,11 +74,11 @@ helm repo add cnpg https://cloudnative-pg.github.io/charts
 helm upgrade --install cnpg cnpg/cloudnative-pg --namespace cnpg-system --create-namespace
 ```
 
-Or ask your agent to apply an operator's manifest with Radar's `apply_resource`.
+Or ask your agent to apply an operator's manifest with Radar's `apply_resource`, or to keep it in git as another Argo CD Application in `team-<team-name>`: your project `team-<team-name>` takes any source repo, any namespace in your cluster, and cluster-scoped resources.
 
 **What the host refuses.** Privileged pods, and pods that use hostPath, hostNetwork or hostPID. Such a pod stays `Pending`, and its reason is a Warning event `SyncError` on the pod: you see it in Radar's events, and your agent through `get_events` or `diagnose`. Charts for node agents (log collectors, node exporters, storage drivers) often ask for these; turn that part off or pick another chart.
 
-**Budget.** Your own workloads get 2 CPU and 4 GiB of requests and 4 CPU and 8 GiB of limits in total.
+**Budget.** One total for everything you run, in any namespace, including what you install: 2 CPU and 4 GiB of requests, 4 CPU and 8 GiB of limits, and 4 PVCs with 20 GiB of storage (the default StorageClass is gp3). Containers without their own requests and limits get 100m CPU / 128Mi of requests and 500m / 512Mi of limits, so charts that set none still run. A pod that would go over stays `Pending` with a `SyncError` event that says `exceeded quota: team-quota`.
 
 ## kubectl
 
@@ -97,7 +97,7 @@ It talks to `https://<team-name>.vc.cnh.radarhq.io`. Its token lasts 24 hours an
 ## When something's wrong
 
 - **Your agent can't find your cluster.** Check that you accepted the invite with an email your team listed when it joined, and that you picked **Cloud Native Hackathon** under "Organization access" when you connected the MCP server. Your cluster is named exactly `<team-name>`.
-- **A pod stays `Pending`.** Read its events in Radar. A `SyncError` means the host refused it (see [Your cluster](#your-cluster)); its message says why. `exceeded quota` means you're over your budget.
+- **A pod stays `Pending`.** Read its events in Radar. A `SyncError` means the host refused it (see [Your cluster](#your-cluster)): `exceeded quota: team-quota` means you're over your budget; otherwise it asks for privileged or host access.
 - **The URL answers 404 or 503 while your pods are healthy.** Check Service `app` in `team-<team-name>`: port 80, and a selector that matches your ready pods.
 - **kubectl says `Unauthorized`.** The token expired. Copy `config` again.
 - **Radar Cloud is down.** Run Radar on your laptop with your kubeconfig (copy it early, so you have one):
