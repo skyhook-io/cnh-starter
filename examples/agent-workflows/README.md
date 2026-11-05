@@ -118,7 +118,8 @@ private unless you intend to share it with the hackathon organization.
 
 `wait_for` may report `blocked` (for example, scheduling or quota prevents progress).
 Read its reason and relevant events before retrying. `curl_service` requires
-in-cluster Radar, exec tools enabled by the operator, and `get services/proxy` on
+in-cluster Radar, a selector-backed Service with a ClusterIP (not headless), exec
+tools enabled by the operator, and `get services/proxy` on
 the target Service. Without auth, that grant must belong to Radar's ServiceAccount.
 The default Radar chart does not grant it.
 
@@ -130,3 +131,6 @@ hackathon dependencies should remain in GitOps. Upgrade overrides merge maps, bu
 lists replace as whole units and null/type changes remove prior values. Replacing
 a container with hidden credentials is refused unless you explicitly replace the
 whole reviewed values configuration.
+
+Before starting a hosted investigation, verify the exact target with `get_resource`.
+Missing or mistyped targets can still consume investigation allowance.
