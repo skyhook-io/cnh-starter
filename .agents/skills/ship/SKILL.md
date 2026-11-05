@@ -22,13 +22,13 @@ Skip this if `get_resource` (kind `Application`, group `argoproj.io`, name `app`
 
 ## 1. Push
 
-Commit and push to `main`. Note the short SHA: `git rev-parse --short=7 HEAD`.
+Commit and push to `main`. Note the full commit SHA (`git rev-parse HEAD`) and its seven-character image tag (`git rev-parse --short=7 HEAD`).
 
-The Action skips commits that only touch `*.md` or `deploy/kustomization.yaml`. Changes only under `deploy/` (other than the image) need no build, so go straight to step 3.
+The Action skips pushes changing only Markdown and/or `deploy/kustomization.yaml`. Markdown-only changes need no deployment. For an intentional kustomization-only change, skip step 2, retain the existing image tag as the expected app version, and verify the configuration change after sync. Every other push, including other files under `deploy/`, triggers a build.
 
 ## 2. Wait for the build
 
-With the GitHub CLI: `gh run list --branch main --limit 1`, then `gh run watch <id> --exit-status`. Without it: `git fetch origin` until `origin/main` has a commit `deploy: <sha> [skip ci]`.
+With the GitHub CLI: `gh run list --workflow build-and-deploy --commit <full-sha>`, then `gh run watch <id> --exit-status` for that commit’s run. Do not use the latest run without matching its commit. If the run is not listed yet, retry briefly within the five-minute deadline; absence is not success. If the run is cancelled or superseded, report that this commit was not built. Verify a newer commit only if it contains the intended change and the person has authorized deploying it; otherwise report the blocker. Without the CLI, use the same deadline while checking `git fetch origin` until `origin/main` has a commit `deploy: <sha> [skip ci]`.
 
 If the run failed, read `gh run view <id> --log-failed`, fix it, and push again. Then `git pull --rebase` so your copy has the bot's deploy commit before you push again.
 
@@ -50,7 +50,7 @@ A Rollout pauses at 25% on purpose. For that flow, use the `canary-release` skil
 
 ## 5. Verify from outside
 
-`curl -s https://<team>.cnh.radarhq.io/`. The starter app prints `version <sha>`, and it must match the SHA from step 1. If you replaced the app, request something your change made visible.
+`curl -s https://<team>.cnh.radarhq.io/`. The starter app prints `version <sha>`, and it must match the built SHA from step 1, or the unchanged image tag for a deliberately skipped build. For a configuration-only change, also verify the intended configuration took effect. If you replaced the app, request something your change made visible.
 
 If anything here is red (a failed sync, pods not ready, the old version still serving, a 404 or 503 from the URL), switch to the `debug-failure` skill. Don't push guesses.
 

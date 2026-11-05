@@ -146,7 +146,11 @@ The image tag is the first seven characters of the app commit that triggered
 1. Save the pushed commit SHA. Check that commit's GitHub Actions run, for example
    `gh run list --workflow build-and-deploy --commit <FULL-SHA>`, then
    `gh run watch <RUN-ID> --exit-status`. If the build failed, inspect its logs before
-   debugging Kubernetes. Markdown-only changes do not trigger a build.
+   debugging Kubernetes. Retry briefly if the run is not registered yet, within the
+   five-minute deadline; a missing/cancelled/superseded run does not prove a build.
+   Markdown-only changes need no deploy. A kustomization-only push also skips the
+   Action: retain the existing image tag and verify the intended configuration
+   after sync instead of expecting a new app version. Other manifest changes build.
 2. Read the resulting `deploy/kustomization.yaml` from the remote repository and
    confirm `newName`/`newTag` identify that build. A successful build for another
    commit is not the evidence you need.
@@ -155,7 +159,8 @@ The image tag is the first seven characters of the app commit that triggered
    and confirm its pod-template image matches the expected tag. If not, keep waiting
    on the desired revision; don't report the existing healthy app as the new build.
 4. Use `wait_for` for rollout completion, then request your public `/api/sessions`.
-   The starter's `version` field must equal that seven-character tag. Keep an equivalent
+   The starter's `version` field must equal that seven-character tag (or the unchanged
+   image tag when the Action intentionally skipped a configuration-only push). Keep an equivalent
    version endpoint if you replace the starter app. Verify the feature you changed too.
 
 ## Delegate a real question to hosted AI SRE
