@@ -7,7 +7,14 @@ may not be deployed on this cluster yet.
 
 ## Keep credentials out of your public repository
 
-Commit a `secretKeyRef` in your Deployment, never the credential value:
+First create `app-credentials` in your namespace through Radar's resource editor, using
+`type: Opaque` and `stringData.api-key` for the value. This Secret is deliberately
+outside Argo CD: do not add its manifest to `deploy/`, a PR, your image, or a build log.
+The generic `apply_resource` MCP tool can create a Secret too, but supplying its value
+to an agent puts it in that agent's conversation/tool history. Prefer entering it in
+the UI. A Secret reference in git does not create the Secret.
+
+Once the Secret exists, commit and deploy a `secretKeyRef` in your Deployment, never the credential value:
 
 ```yaml
 env:
@@ -17,13 +24,6 @@ env:
         name: app-credentials
         key: api-key
 ```
-
-Create `app-credentials` in your namespace through Radar's resource editor, using
-`type: Opaque` and `stringData.api-key` for the value. This Secret is deliberately
-outside Argo CD: do not add its manifest to `deploy/`, a PR, your image, or a build log.
-The generic `apply_resource` MCP tool can create a Secret too, but supplying its value
-to an agent puts it in that agent's conversation/tool history. Prefer entering it in
-the UI. A Secret reference in git does not create the Secret.
 
 After changing a Secret consumed through environment variables, restart the workload
 through `manage_workload`, then use `wait_for` to check the rollout. Don't print the
