@@ -49,7 +49,7 @@ Make the smallest change that removes the cause, push it, and follow the `ship` 
 
 ## 5. When it's not obvious
 
-Suggest a hosted AI investigation and explain that it uses the shared organization allowance. Once the person has requested or approved it, use the hosted tools if the organization-level `/mcp` connection advertises `start_investigation`; follow `examples/agent-workflows/README.md`. Otherwise the person can open the resource at app.radarhq.io and click Investigate. Verify its findings against primary evidence and apply app fixes through git. Human-started investigations are private unless the person shares them; sharing shows them to every team in the org.
+Suggest a hosted AI investigation and explain that it uses the shared organization allowance and may incur billed overage if an owner enabled it. Once the person has requested or approved it, use the hosted tools if the organization-level `/mcp` connection advertises `start_investigation`; follow `examples/agent-workflows/README.md`. Otherwise the person can open the resource at app.radarhq.io and click Investigate. Verify its findings against primary evidence and apply app fixes through git. Human-started investigations are private unless the person shares them; sharing shows them to every team in the org.
 
 ## Report
 

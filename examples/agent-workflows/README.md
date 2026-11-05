@@ -171,7 +171,8 @@ may still be available when new starts are disabled. `diagnose` collects evidenc
 while `start_investigation` starts a hosted AI investigator and can consume allowance.
 It starts with a resource assessment; arbitrary questions are follow-up turns.
 Start only when the person has requested or approved a hosted investigation; explain
-that it uses the shared organization allowance. An existing request to investigate
+that it uses the shared organization allowance and may incur billed overage if an
+owner enabled it. An existing request to investigate
 is sufficient—do not ask again for the same authorized work.
 
 - Get `cluster` from `list_clusters`, then use `get_resource` to verify the exact target.
@@ -191,7 +192,8 @@ is sufficient—do not ask again for the same authorized work.
   or `stopped`. `stopping` is not terminal. Check tool errors before reading result fields.
 
 If disclosure or allowance blocks a start, surface the refusal. A human accepts
-organization disclosure in the UI; agents cannot do that or approve spending changes.
+organization disclosure in the UI; agents cannot do that, enable overage, or raise its limit. Existing owner-approved
+overage can still be charged by an admitted start.
 All teams share the configured organization allowance and concurrency pool.
 
 Hosted investigation starts and follow-ups require the Hub operator to enable
