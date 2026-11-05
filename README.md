@@ -4,7 +4,7 @@ Start here if your team has a namespace on the hackathon cluster. You get a smal
 
 ## Before you start
 
-Get your team's namespace at **join.cnh.radarhq.io** (the join code is on the Radar table and in the organizers' email), or at the Radar table. Within a minute you have:
+Get your team's namespace at **join.cnh.radarhq.io** (the join code is shared at the kickoff and on the Radar table). Within a minute you have:
 
 - the namespace `team-<team-name>` on the hackathon cluster,
 - this starter app already running at `https://<team-name>.cnh.radarhq.io`,
