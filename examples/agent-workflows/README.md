@@ -53,6 +53,11 @@ spec:
         - name: import
           image: ghcr.io/YOUR-OWNER/YOUR-REPO:YOUR-BUILT-TAG
           command: [node, scripts/import.js]
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            seccompProfile: {type: RuntimeDefault}
+            capabilities: {drop: [ALL]}
           resources:
             requests: {cpu: 100m, memory: 128Mi}
             limits: {cpu: 500m, memory: 256Mi}
@@ -76,16 +81,25 @@ Service in `deploy/`, add them to `deploy/kustomization.yaml`, and push. Use a P
 data must survive a Pod replacement. Check the cluster's available storage and your
 quota before choosing requests; your dependency shares the team's quota with the app.
 
-A chart can also be managed by an Argo CD Application in your team's namespace and
-AppProject. Use an exact chart version and check its rendered resources first. Charts
+If staff has allowed the chart repository in your AppProject, a chart can also be
+managed by an Argo CD Application in your team's namespace. Use an exact chart version and check its rendered resources first. Charts
 that need CRDs, cluster-wide Roles/Bindings or new namespaces do not fit the shared
 cluster's team scope; ask staff instead of requesting broader permissions. Do not run
 a direct Helm upgrade against resources already managed by Argo CD or Flux.
+
+On your own cluster, `manage_helm` can manage a native release when advertised.
+Configure the chart repository in Radar first. Upgrade values merge with stored
+values by default; full replacement requires `replace_values: true`. Keep the shared
+hackathon app's dependencies in GitOps. Native Helm is not required for this track.
 
 ## Inspect the running application
 
 - For a public endpoint, use your agent's HTTP/browser tools against your team's URL.
 - For Kubernetes state and failure evidence, use Radar's resource/log tools or `diagnose`.
+- If advertised and enabled, `curl_service` GETs a selector-backed internal Service
+  from in-cluster Radar and returns its HTTP status/body. It sends no credentials and
+  is not a test of the public ingress path. Use `namespace`, Service `name` and its
+  numeric `port`, plus the endpoint `path`.
 - For an in-container check, use `exec_pod` if the operator has enabled it. It accepts an
   argv array, needs the executable in the image, and runs with your Kubernetes identity.
   It has no interactive input/TTY. Never put literal secrets in argv: audit logs can
