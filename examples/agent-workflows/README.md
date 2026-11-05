@@ -88,7 +88,7 @@ cluster's team scope; ask staff instead of requesting broader permissions. Do no
 a direct Helm upgrade against resources already managed by Argo CD or Flux.
 
 On your own cluster, `manage_helm` can manage a native release when advertised.
-Configure the chart repository in Radar first. Upgrade values merge with stored
+The owner must preconfigure the chart repository used by that Radar instance first. Upgrade values merge with stored
 values by default; full replacement requires `replace_values: true`. Keep the shared
 hackathon app's dependencies in GitOps. Native Helm is not required for this track.
 
@@ -111,8 +111,9 @@ hackathon app's dependencies in GitOps. Native Helm is not required for this tra
 `diagnose` gathers Kubernetes evidence. For a hosted AI SRE investigation, open the
 resource's **Investigate** action in Radar Cloud. Accept the disclosure there if asked.
 Newer hubs may also advertise investigation MCP tools; use their returned run ID to
-read the result rather than starting the same investigation repeatedly. Keep the run
-private unless you intend to share it with the hackathon organization.
+read the result rather than starting the same investigation repeatedly. Human-started runs are private by default. Sharing with the organization means
+sharing with all its teams, not only teammates. Automatic analyses follow the
+organization's separate visibility policy; MCP only reads your own runs.
 
 ### Tool prerequisites and outcomes
 
@@ -123,14 +124,63 @@ tools enabled by the operator, and `get services/proxy` on
 the target Service. Without auth, that grant must belong to Radar's ServiceAccount.
 The default Radar chart does not grant it.
 
-For native Helm on your own cluster, ask the configuration owner to configure the
-source first. Local Radar has Helm settings; operator-managed Radar uses startup
-Helm configuration (including `helm.ociSources`); Cloud repository changes require
-the owner and pod-local configuration must be restored after a restart. Shared
-hackathon dependencies should remain in GitOps. Upgrade overrides merge maps, but
+For native Helm, source configuration is a prerequisite outside MCP. Local Radar
+uses its Helm repository config (for example a named source added with `helm repo add`).
+Operator-managed OSS can use startup Helm configuration, including `helm.ociSources`.
+That chart setting is rejected in Cloud mode. Cloud has no self-service first-install
+source setup in this workflow; raw owner configuration is pod-local and lost on Pod
+replacement. Use the starter's GitOps dependency path for Cloud-connected clusters
+unless your operator has already supplied and maintains the required source. Upgrade overrides merge maps, but
 lists replace as whole units and null/type changes remove prior values. Replacing
 a container with hidden credentials is refused unless you explicitly replace the
 whole reviewed values configuration.
 
 Before starting a hosted investigation, verify the exact target with `get_resource`.
 Missing or mistyped targets can still consume investigation allowance.
+
+## Confirm that your push is actually live
+
+The image tag is the first seven characters of the app commit that triggered
+`build-and-deploy`, not the later bot commit that updates the manifests.
+
+1. Save the pushed commit SHA. Check that commit's GitHub Actions run, for example
+   `gh run list --workflow build-and-deploy --commit <FULL-SHA>`, then
+   `gh run watch <RUN-ID> --exit-status`. If the build failed, inspect its logs before
+   debugging Kubernetes. Markdown-only changes do not trigger a build.
+2. Read the resulting `deploy/kustomization.yaml` from the remote repository and
+   confirm `newName`/`newTag` identify that build. A successful build for another
+   commit is not the evidence you need.
+3. Read the Argo Application with `get_resource`. Refresh/sync through `manage_gitops`
+   if necessary. Read the live Deployment (or Rollout if you changed the example)
+   and confirm its pod-template image matches the expected tag. If not, keep waiting
+   on the desired revision; don't report the existing healthy app as the new build.
+4. Use `wait_for` for rollout completion, then request your public `/api/sessions`.
+   The starter's `version` field must equal that seven-character tag. Keep an equivalent
+   version endpoint if you replace the starter app. Verify the feature you changed too.
+
+## Delegate a real question to hosted AI SRE
+
+These tools live on the organization `/mcp` endpoint, not `/c/<cluster-id>/mcp`.
+Discover them first; if absent, use the Cloud UI. `diagnose` collects evidence itself,
+while `start_investigation` starts a hosted AI investigator and can consume allowance.
+It starts with a resource assessment; arbitrary questions are follow-up turns.
+
+- Get `cluster` from `list_clusters`, then use `get_resource` to verify the exact target.
+- Call `start_investigation` with, for example,
+  `{"cluster":"clu_example","group":"apps","kind":"Deployment","namespace":"team-__TEAM__","name":"app"}`.
+  When coming from a Radar issue, add its ID as `issue_id`; the Hub validates its target
+  and can associate the same counted issue episode. Do not invent an issue ID.
+- Save `structuredContent.result.id` as `run_id`. Call `get_investigation` with
+  `cluster` and `run_id`; keep `next_after`, and use it as `after` on the next event read.
+  Drain `has_more` pages. `has_more:false` only means currently saved events are drained.
+- Poll with a bounded interval/deadline. For status-only checks use `include_events:false`
+  and omit `after`; never start a new investigation just to check progress.
+- Only ask `follow_up_investigation` when `canContinue:true`. Supply `question` and read
+  events after your saved cursor for the answer, usually in `done.diagnosis.report`.
+  Saved `findings` can still be the prior assessment; don't present them as the new answer.
+- Stop through `stop_investigation` when appropriate, then poll until `done`, `error`,
+  or `stopped`. `stopping` is not terminal. Check tool errors before reading result fields.
+
+If disclosure or allowance blocks a start, surface the refusal. A human accepts
+organization disclosure in the UI; agents cannot do that or approve spending changes.
+All teams share the configured organization allowance and concurrency pool.
