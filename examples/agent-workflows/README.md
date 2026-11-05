@@ -1,0 +1,101 @@
+# Dependencies, configuration and one-off work
+
+Use these patterns when your project needs them. They are not judging requirements.
+Replace `team-__TEAM__` with your assigned namespace. Discover the tools your connected
+Radar advertises before using a tool: a tool described in newer Radar documentation
+may not be deployed on this cluster yet.
+
+## Keep credentials out of your public repository
+
+Commit a `secretKeyRef` in your Deployment, never the credential value:
+
+```yaml
+env:
+  - name: API_KEY
+    valueFrom:
+      secretKeyRef:
+        name: app-credentials
+        key: api-key
+```
+
+Create `app-credentials` in your namespace through Radar's resource editor, using
+`type: Opaque` and `stringData.api-key` for the value. This Secret is deliberately
+outside Argo CD: do not add its manifest to `deploy/`, a PR, your image, or a build log.
+The generic `apply_resource` MCP tool can create a Secret too, but supplying its value
+to an agent puts it in that agent's conversation/tool history. Prefer entering it in
+the UI. A Secret reference in git does not create the Secret.
+
+After changing a Secret consumed through environment variables, restart the workload
+through `manage_workload`, then use `wait_for` to check the rollout. Don't print the
+credential to prove it exists; check that the app's authenticated operation succeeds.
+
+## Run one-off work as a Job
+
+For a migration, import or batch operation, create a uniquely named Job through
+`apply_resource` with `mode=create`. Use your already-built public application image,
+its actual command, and only the permissions that command needs. This example assumes
+your image contains `node` and `scripts/import.js`; change both for your app.
+
+```yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: app-import-001
+  namespace: team-__TEAM__
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 300
+  ttlSecondsAfterFinished: 3600
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: import
+          image: ghcr.io/YOUR-OWNER/YOUR-REPO:YOUR-BUILT-TAG
+          command: [node, scripts/import.js]
+          resources:
+            requests: {cpu: 100m, memory: 128Mi}
+            limits: {cpu: 500m, memory: 256Mi}
+```
+
+Use `wait_for` with `kind=job`, the namespace/name and `condition=complete`. A `waiting`
+result means the Job has not finished; call again within your own deadline. A `failed`
+result needs investigation. Read `get_workload_logs` or inspect the Job's Pods to see
+what the command actually did. Kubernetes completion only establishes that the process
+exited successfully; verify the application's intended result too.
+
+Jobs and non-git Secrets are exceptions to the starter's normal GitOps rule: they are
+not resources Argo CD owns. Do not reuse a Job name to rerun work, or put a completed
+one-off Job into the continuously reconciled app manifests. Make retries safe for your
+data before rerunning a migration or import.
+
+## Add a dependency
+
+For a small database or queue, put its namespace-scoped Deployment/StatefulSet and
+Service in `deploy/`, add them to `deploy/kustomization.yaml`, and push. Use a PVC when
+data must survive a Pod replacement. Check the cluster's available storage and your
+quota before choosing requests; your dependency shares the team's quota with the app.
+
+A chart can also be managed by an Argo CD Application in your team's namespace and
+AppProject. Use an exact chart version and check its rendered resources first. Charts
+that need CRDs, cluster-wide Roles/Bindings or new namespaces do not fit the shared
+cluster's team scope; ask staff instead of requesting broader permissions. Do not run
+a direct Helm upgrade against resources already managed by Argo CD or Flux.
+
+## Inspect the running application
+
+- For a public endpoint, use your agent's HTTP/browser tools against your team's URL.
+- For Kubernetes state and failure evidence, use Radar's resource/log tools or `diagnose`.
+- For an in-container check, use `exec_pod` if the operator has enabled it. It accepts an
+  argv array, needs the executable in the image, and runs with your Kubernetes identity.
+  It has no interactive input/TTY. Never put literal secrets in argv: audit logs can
+  retain the command. If it is absent, ask staff; installing a client-side MCP connection
+  does not enable the server's exec capability.
+- A failed command or HTTP response is evidence, not automatically a Kubernetes fault.
+  Check the application's response/body and expected behavior too.
+
+`diagnose` gathers Kubernetes evidence. For a hosted AI SRE investigation, open the
+resource's **Investigate** action in Radar Cloud. Accept the disclosure there if asked.
+Newer hubs may also advertise investigation MCP tools; use their returned run ID to
+read the result rather than starting the same investigation repeatedly. Keep the run
+private unless you intend to share it with the hackathon organization.

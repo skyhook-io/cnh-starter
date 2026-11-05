@@ -4,7 +4,7 @@ This repo deploys to this team's own Kubernetes cluster at the Cloud Native Hack
 
 **Pass `cluster` on every Radar call.** The organization has about 40 team clusters plus `cnh`, the platform's cluster, where teams have no access. Call `list_clusters` once per session, take the `id` of the entry whose `name` is exactly `__TEAM__`, and pass that id as `cluster` on every other Radar tool call. With this many clusters the tools can't pick a default. The person only has access to this team's cluster; never call a tool against `cnh` or another team's cluster. Pass `namespace: team-__TEAM__` wherever a tool takes it, unless you mean another namespace in this cluster.
 
-Deploys are GitOps: change the repo, push to `main`, and Argo CD syncs the namespace. Argo CD runs inside this cluster (namespace `argocd`) with no web UI; you drive it with `manage_gitops`. Don't apply or patch app manifests on the cluster. Argo CD's self-heal puts the repo's version back. The one exception is `argocd/application.yaml`, applied once to start the sync.
+Deploys are GitOps: change the repo, push to `main`, and Argo CD syncs the namespace. Argo CD runs inside this cluster (namespace `argocd`) with no web UI; you drive it with `manage_gitops`. Don't apply or patch app manifests on the cluster. Argo CD's self-heal puts the repo's version back. Apply `argocd/application.yaml` once to start the sync. One-off Jobs and credential Secrets deliberately kept outside git can also be created directly when Argo CD does not own them; follow `examples/agent-workflows/README.md`.
 
 ## When to do what
 
@@ -40,3 +40,7 @@ Deploys are GitOps: change the repo, push to `main`, and Argo CD syncs the names
 - Your public URL is `https://__TEAM__.cnh.radarhq.io`. The platform routes it to Service `app`, port 80, in `team-__TEAM__`: keep that Service. No other hostname is possible, and Services of type LoadBalancer or NodePort aren't available. The HTTPRoute in `deploy/` does nothing in this cluster (it has no Gateway); Argo CD counts it healthy, so leave it.
 - The app's image comes from GHCR and must be public.
 - kubectl works only if the person copied the kubeconfig (README, kubectl). Prefer Radar's tools: they're what the track is about.
+
+## Application workflows
+
+Read [`examples/agent-workflows/README.md`](examples/agent-workflows/README.md) before adding credentials, one-off Jobs or dependencies. Discover the live MCP catalog before assuming an optional or newly added tool is available.
