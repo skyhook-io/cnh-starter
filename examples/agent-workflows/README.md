@@ -113,3 +113,20 @@ resource's **Investigate** action in Radar Cloud. Accept the disclosure there if
 Newer hubs may also advertise investigation MCP tools; use their returned run ID to
 read the result rather than starting the same investigation repeatedly. Keep the run
 private unless you intend to share it with the hackathon organization.
+
+### Tool prerequisites and outcomes
+
+`wait_for` may report `blocked` (for example, scheduling or quota prevents progress).
+Read its reason and relevant events before retrying. `curl_service` requires
+in-cluster Radar, exec tools enabled by the operator, and `get services/proxy` on
+the target Service. Without auth, that grant must belong to Radar's ServiceAccount.
+The default Radar chart does not grant it.
+
+For native Helm on your own cluster, ask the configuration owner to configure the
+source first. Local Radar has Helm settings; operator-managed Radar uses startup
+Helm configuration (including `helm.ociSources`); Cloud repository changes require
+the owner and pod-local configuration must be restored after a restart. Shared
+hackathon dependencies should remain in GitOps. Upgrade overrides merge maps, but
+lists replace as whole units and null/type changes remove prior values. Replacing
+a container with hidden credentials is refused unless you explicitly replace the
+whole reviewed values configuration.
