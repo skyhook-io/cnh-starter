@@ -33,7 +33,7 @@ cat <<EOF
 Done. Your namespace is team-${team}, your URL is https://${team}.cnh.radarhq.io.
 
 Next:
-  1. git commit -am "Set up team ${team}" && git push
+  1. git commit -am "Set up team ${team}" && git pull --rebase && git push
      The GitHub Action builds your image and pushes it to ghcr.io/${repo_lower}.
      Wait for it to go green (the repo's Actions tab).
   2. Once the first build finishes, make the image public: on your repo's GitHub page, open

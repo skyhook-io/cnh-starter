@@ -32,9 +32,9 @@ This repo also has skills for shipping, debugging and canaries in `.agents/skill
 2. **Point it at your namespace.**
    ```bash
    ./scripts/setup.sh <team-name>
-   git commit -am "Set up team <team-name>" && git push
+   git commit -am "Set up team <team-name>" && git pull --rebase && git push
    ```
-   The GitHub Action builds the image and pushes it to GHCR. Wait for it to go green (the repo's **Actions** tab).
+   The `git pull` picks up a commit the Action may already have made when GitHub created your repo. The Action builds the image and pushes it to GHCR. Wait for it to go green (the repo's **Actions** tab).
 3. **Make the image public, once.** On your repo's GitHub page, open **Packages** (right-hand column) > **Package settings** > **Change visibility** > **Public**. GHCR makes new images private, and the cluster can't pull a private one.
 4. **Start GitOps.** Ask your agent to apply `argocd/application.yaml` through Radar's MCP server. Argo CD takes over the starter app and from then on deploys every push to `main`.
 5. **Check it's yours.** Open `https://<team-name>.cnh.radarhq.io`. It shows `version` and the first 7 characters of your latest commit.
