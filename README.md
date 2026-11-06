@@ -4,9 +4,10 @@ Start here if your team has its own cluster at the hackathon: a virtual Kubernet
 
 ## The day
 
-- 11:00: get your cluster and connect your agent (steps below).
-- All day: Argo CD deploys every push, and your agent pushes, syncs and waits for each rollout through Radar.
-- By 5:30: tell the day's story from Radar: the timeline, the investigation, and Checks before and after.
+- 11:00: before you write any code, get your cluster, open it in Radar Cloud, and connect your agent to Radar (steps below).
+- First hour: open **Checks** for your cluster and take a screenshot. That's your "before".
+- All day, work through Radar: your agent pushes, syncs and waits for each rollout through Radar's MCP. When something breaks, look in Radar first, and start an AI investigation on anything you can't explain.
+- By 5:30: tell the day's story from Radar: the timeline, the investigation, and Checks before and after. It's only there if you used Radar all day.
 - The winning team gets $4,000. Hackathon clusters and access to the hackathon org end on Friday, November 13.
 
 ## Before you start
