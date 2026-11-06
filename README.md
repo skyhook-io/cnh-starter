@@ -1,6 +1,6 @@
 # Radar AI SRE track starter: Cloud Native Hackathon
 
-Start here if your team has its own cluster at the hackathon: a virtual Kubernetes cluster (vcluster) where you're cluster-admin. You get a small app that `git push` deploys through Argo CD, and notes your coding agent reads so it ships through [Radar](https://radarhq.io)'s MCP server. Autoscaling and canary examples are there if you want them.
+Start here if your team has its own cluster at the hackathon: a virtual Kubernetes cluster (vcluster) where you're cluster-admin. You get a small app that `git push` deploys through Argo CD, and notes your coding agent reads so it ships through [Radar](https://radarhq.io)'s MCP server. Below is a menu of what Radar can do: pick what your project needs.
 
 ## The day
 
@@ -51,12 +51,22 @@ This repo also has skills for shipping, debugging and canaries in `.agents/skill
 
 One person can do this while the others accept their invites.
 
-## Optional extras
+## What Radar can do for you
 
-Pick one if it fits your project. Neither is required.
+Pick what your project needs. None of it is required, and more doesn't score higher.
 
-- `examples/hpa`: autoscaling.
-- `examples/canary`: ship every change as an Argo Rollouts canary and promote it through Radar.
+| You want to | In Radar Cloud | Or ask your agent |
+|---|---|---|
+| See what's running and how it connects | Topology, Resources | "Show me what our app talks to and depends on." |
+| Ship every push and know it worked | GitOps, the Application's page | "Ship this, and tell me when it's healthy and live." |
+| Find what's broken right now | Issues, the workload's Timeline and Logs | "What's unhealthy in our cluster, and why?" |
+| See what changed | Timeline, with diffs | "What changed in the last hour?" |
+| Trace a failure to its cause | **Investigate** on the failing resource | You start this one in Radar Cloud. |
+| Check health and security | Checks | "Review Checks for our namespace and fix what applies." |
+| See load and resource use over time | The workload's Metrics tab | "Is our memory climbing? Are our requests sized right?" |
+| Add a database or an operator | Helm | "Install CloudNativePG and a small Postgres for us." |
+| Restart, scale or run a job | The workload's page | "Restart the app." "Run the cronjob now." |
+| Release carefully, or autoscale | The Rollout's page: Promote, Abort | "Switch us to canary releases" (`examples/canary`), or "Add autoscaling" (`examples/hpa`). |
 
 Replace `app/` with your own project whenever you like. Keep it listening on `$PORT` (8080) with `/healthz` and `/readyz`, or update the probes in `deploy/`.
 
