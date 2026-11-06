@@ -59,6 +59,6 @@ If anything here is red (a failed sync, pods not ready, the old version still se
 ## Don't
 
 - Don't call a Radar tool without `cluster`.
-- Don't apply app manifests with `apply_resource` or `patch_resource`. Argo CD's self-heal reverts them within seconds.
+- Don't apply Argo CD-owned app manifests with `apply_resource` or `patch_resource`. Argo CD's self-heal reverts them within seconds.
 - Don't edit `newName` or `newTag` in `deploy/kustomization.yaml`; the Action owns them.
 - Don't report "deployed" after the push. Report what step 5 showed.

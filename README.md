@@ -61,7 +61,7 @@ Pick what your project needs. None of it is required, and more doesn't score hig
 | Ship every push and know it worked | GitOps, the Application's page | "Ship this, and tell me when it's healthy and live." |
 | Find what's broken right now | Issues, the workload's Timeline and Logs | "What's unhealthy in our cluster, and why?" |
 | See what changed | Timeline, with diffs | "What changed in the last hour?" |
-| Trace a failure to its cause | **Investigate** on the failing resource | You start this one in Radar Cloud. |
+| Trace a failure to its cause | **Investigate** on the failing resource | Request a hosted investigation when available; otherwise start it in Radar Cloud. |
 | Check health and security | Checks | "Review Checks for our namespace and fix what applies." |
 | See load and resource use over time | The workload's Metrics tab | "Is our memory climbing? Are our requests sized right?" |
 | Add a database | Helm, Resources | "Create a small Postgres for us" (`examples/postgres`). |
