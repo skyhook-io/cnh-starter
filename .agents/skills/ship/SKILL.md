@@ -36,7 +36,7 @@ If the run failed, read `gh run view <id> --log-failed`, fix it, and push again.
 
 Argo CD polls git every few minutes. Don't wait for it: call `manage_gitops` with `cluster`, `tool: argocd`, `action: sync`, `namespace: team-<team>`, `name: app`.
 
-Radar's sync ignores the Application's own `syncOptions`. The starter's Application has none and needs none. If you added `syncOptions` to an Application (say `ServerSideApply=true` for large CRDs, or `CreateNamespace=true` for a new namespace), pass the same list as `sync_options` on every sync of it.
+The starter's Application has no `syncOptions` and needs none. If an Application has options (such as `ServerSideApply=true` for large CRDs or `CreateNamespace=true`), read the live Application immediately before syncing and pass its complete current list as `sync_options`. Do not use a cached list or pass only one added option. This preserves the options on Radar v1.19.0, which does not inherit them; Radar’s current sync implementation inherits them when omitted, but an explicit list replaces them for that sync.
 
 Then `get_resource` on the Application and check both of these:
 - `status.sync.revision` equals `git rev-parse origin/main` (after `git fetch`);

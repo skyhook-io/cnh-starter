@@ -111,7 +111,10 @@ It's ready in about a minute. Your app connects to `db-rw:5432`; the user, passw
 
 ```bash
 helm repo add nats https://nats-io.github.io/k8s/helm/charts/
-helm upgrade --install nats nats/nats --namespace nats --create-namespace
+helm repo update nats
+helm search repo nats/nats --versions
+# Choose an exact version from the results, then replace CHART_VERSION below.
+helm upgrade --install nats nats/nats --version CHART_VERSION --namespace nats --create-namespace
 ```
 
 Or ask your agent to apply an operator's manifest with Radar's `apply_resource`, or to keep it in git as another Argo CD Application in `team-<team-name>`: your project `team-<team-name>` takes any source repo, any namespace in your cluster, and cluster-scoped resources.

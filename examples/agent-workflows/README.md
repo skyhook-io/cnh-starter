@@ -81,7 +81,10 @@ data before rerunning a migration or import.
 
 ## Add a dependency
 
-For a small database or queue, put its namespace-scoped Deployment/StatefulSet and
+For Postgres, use the [Postgres example](../postgres/README.md): the CloudNativePG
+operator is already installed, so create a database `Cluster`, not another operator.
+
+For another small database or queue, put its namespace-scoped Deployment/StatefulSet and
 Service in `deploy/`, add them to `deploy/kustomization.yaml`, and push. Use a PVC when
 data must survive a Pod replacement. Check the cluster's available storage and your
 quota before choosing requests; your dependency shares the team's quota with the app.
@@ -93,18 +96,24 @@ version and check its rendered resources first. Operators, CRDs, cluster-wide
 Roles/Bindings and additional namespaces are allowed inside your team's cluster.
 They still share its total budget and cannot bypass the host's restrictions on
 privileged, hostPath, hostNetwork or hostPID Pods. Leave the pre-installed Argo CD,
-Rollouts, Prometheus, metrics components and AppProject unchanged.
+Rollouts, Prometheus, CloudNativePG operator, metrics components and AppProject unchanged.
 
 If an Application needs `CreateNamespace=true` or `ServerSideApply=true`, set its
-`syncOptions` and pass the same list as `sync_options` on every `manage_gitops` sync.
+`syncOptions`. Before syncing, read the live Application and pass its complete current
+list as `sync_options`; do not reuse a cached list or pass only the new option.
+This also works with Radar v1.19.0, which does not inherit the list automatically.
+Radar’s current sync implementation inherits it when omitted; an explicit list replaces it for that sync.
 Do not run a direct Helm upgrade against resources already managed by Argo CD or Flux.
 
-`manage_helm` can manage a native release when advertised. The owner must preconfigure
+A native Helm release can be managed through the Helm CLI (with the person’s
+kubeconfig) or Radar’s `manage_helm` tool when advertised. For `manage_helm`, the owner must preconfigure
 the chart repository used by that Radar instance first; cluster-admin access does not
-configure Radar's sources. Upgrade values merge with stored values by default; full
+configure Radar's sources. For `manage_helm`, upgrade values merge with stored values by default; full
 replacement requires `replace_values: true`. Keep the starter app and dependencies
 already owned by Argo CD in GitOps. For a separate dependency, choose one owner: a
-GitOps Application or a native Helm release. Native Helm is not required for this track.
+GitOps Application, a native Helm release, or direct manifests through `apply_resource`
+that neither controller owns. Do not mix these paths for the same resources. Native
+Helm is not required for this track.
 
 ## Inspect the running application
 
@@ -122,12 +131,9 @@ GitOps Application or a native Helm release. Native Helm is not required for thi
 - A failed command or HTTP response is evidence, not automatically a Kubernetes fault.
   Check the application's response/body and expected behavior too.
 
-`diagnose` gathers Kubernetes evidence. For a hosted AI SRE investigation, open the
-resource's **Investigate** action in Radar Cloud. Accept the disclosure there if asked.
-Newer hubs may also advertise investigation MCP tools; use their returned run ID to
-read the result rather than starting the same investigation repeatedly. Human-started runs are private by default. Sharing with the organization means
-sharing with all its teams, not only teammates. Automatic analyses follow the
-organization's separate visibility policy; MCP only reads your own runs.
+`diagnose` gathers Kubernetes evidence; it does not start a hosted investigator.
+For optional hosted analysis, follow [the investigation workflow](#delegate-a-real-question-to-hosted-ai-sre)
+below, which covers MCP discovery, UI fallback, allowance and saved answers.
 
 ### Tool prerequisites and outcomes
 
@@ -138,19 +144,17 @@ tools enabled by the operator (`--mcp-http-tools` or Helm `mcp.httpTools: true`)
 the target Service. Without auth, that grant must belong to Radar's ServiceAccount.
 The default Radar chart does not grant it.
 
-For native Helm, source configuration is a prerequisite outside MCP. Local Radar
+For Radar’s `manage_helm` tool, source configuration is a prerequisite outside MCP. Local Radar
 uses its Helm repository config (for example a named source added with `helm repo add`).
 Operator-managed OSS can use startup Helm configuration, including `helm.ociSources`.
 That chart setting is rejected in Cloud mode. Cloud has no self-service first-install
 source setup in this workflow; raw owner configuration is pod-local and lost on Pod
-replacement. Use the starter's GitOps dependency path for Cloud-connected clusters
-unless your operator has already supplied and maintains the required source. Upgrade overrides merge maps, but
+replacement. If Radar has no maintained source, use a GitOps Application or the
+Helm CLI with its separately configured repository and the person’s kubeconfig;
+cluster-admin access alone does not make `manage_helm` ready. Upgrade overrides merge maps, but
 lists replace as whole units and null/type changes remove prior values. Replacing
 a container with hidden credentials is refused unless you explicitly replace the
 whole reviewed values configuration.
-
-Before starting a hosted investigation, verify the exact target with `get_resource`.
-Missing or mistyped targets can still consume investigation allowance.
 
 ## Confirm that your push is actually live
 
@@ -169,7 +173,8 @@ The image tag is the first seven characters of the app commit that triggered
    confirm `newName`/`newTag` identify that build. A successful build for another
    commit is not the evidence you need.
 3. Read the Argo Application with `get_resource`. Refresh/sync through `manage_gitops`
-   if necessary, preserving any Application `syncOptions` through `sync_options`. Read the live Deployment (or Rollout if you changed the example)
+   if necessary, passing the complete freshly read Application `syncOptions` as
+   `sync_options`. Read the live Deployment (or Rollout if you changed the example)
    and confirm its pod-template image matches the expected tag. If not, keep waiting
    on the desired revision; don't report the existing healthy app as the new build.
 4. Use `wait_for` for rollout completion, then request your public `/api/sessions`.
@@ -184,12 +189,14 @@ Discover `start_investigation` first; if absent, use the Cloud UI. Read/list/sto
 may still be available when new starts are disabled. `diagnose` collects evidence itself,
 while `start_investigation` starts a hosted AI investigator and can consume allowance.
 It starts with a resource assessment; arbitrary questions are follow-up turns.
+The investigator gathers evidence and suggests steps; these tools do not apply remediation.
 Start only when the person has requested or approved a hosted investigation; explain
 that it uses the shared organization allowance and may incur billed overage if an
 owner enabled it. An existing request to investigate
 is sufficient—do not ask again for the same authorized work.
 
-- Get `cluster` from the `list_clusters` entry whose `name` exactly matches your team, then use `get_resource` to verify the exact target.
+- Get `cluster` from the `list_clusters` entry whose `name` exactly matches your team, then use `get_resource` to verify the exact target. Missing or mistyped targets can still consume allowance.
+- If a start response was lost, you lost the run ID, or the person started it in the UI, use `list_investigations` for that cluster before starting again. It returns your own runs in `result.runs`; select the intended target/run, use its `id` as `run_id`, and continue with `get_investigation` instead of starting again. A completed run started again can consume allowance again. If listing is unavailable, recover the existing run in Cloud instead of assuming another start is needed.
 - Call `start_investigation` with, for example,
   `{"cluster":"clu_example","group":"apps","kind":"Deployment","namespace":"team-__TEAM__","name":"app"}`.
   When coming from a Radar issue, add its ID as `issue_id`; the Hub validates its target
@@ -197,13 +204,18 @@ is sufficient—do not ask again for the same authorized work.
 - Save `structuredContent.result.id` as `run_id`. Call `get_investigation` with
   `cluster` and `run_id`; keep `next_after`, and use it as `after` on the next event read.
   Drain `has_more` pages. `has_more:false` only means currently saved events are drained.
-- Poll with a bounded interval/deadline. For status-only checks use `include_events:false`
+- Poll with a bounded interval/deadline until `done`, `error`, or `stopped`; `running` and `stopping` are nonterminal. The initial assessment is in `findings` when available. For status-only checks use `include_events:false`
   and omit `after`; never start a new investigation just to check progress.
 - Only ask `follow_up_investigation` when it is advertised and `canContinue:true`. Supply `question` and read
   events after your saved cursor for the answer, usually in `done.diagnosis.report`.
   Saved `findings` can still be the prior assessment; don't present them as the new answer.
 - Stop through `stop_investigation` when appropriate, then poll until `done`, `error`,
   or `stopped`. `stopping` is not terminal. Check tool errors before reading result fields.
+
+New interactive runs start private, whether started in the UI or through MCP.
+Sharing a run with the organization exposes it to all teams, not just teammates.
+Automatic analyses follow a separate visibility policy; MCP reads only your own runs.
+MCP cannot change sharing or accept disclosure.
 
 If disclosure or allowance blocks a start, surface the refusal. A human accepts
 organization disclosure in the UI; agents cannot do that, enable overage, or raise its limit. Existing owner-approved
