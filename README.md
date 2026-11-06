@@ -116,6 +116,31 @@ It talks to `https://<team-name>.vc.cnh.radarhq.io`. Its token lasts 24 hours an
 
 ## Bringing a cluster of your own instead
 
+### On your laptop, in one command
+
+This is for a few teams, if the shared cluster has a problem. You need Docker running (Docker Desktop, OrbStack, colima or Rancher Desktop) with about 4 GB of memory free, `kubectl`, `helm`, and k3d (`brew install k3d`; kind or minikube work too). In your copy of this repo:
+
+```bash
+./scripts/local-cluster.sh <team-name>
+```
+
+It creates a one-node cluster, `cnh-<team-name>`, set up like the one the hackathon gives you: Argo CD, Argo Rollouts, the Gateway API CRDs, and namespace `team-<team-name>` with its Argo CD project. Your repo runs there unchanged. The script stops twice, for things only you can do:
+
+1. Connect the cluster to your own free Radar Cloud organization: sign up at [app.radarhq.io](https://app.radarhq.io), click **Connect a cluster**, and run the Helm command it shows in your terminal. The script never sees that command or its token.
+2. Push your repo, if you haven't yet (it runs `./scripts/setup.sh` for you first).
+
+Then it applies `argocd/application.yaml` and prints how to open the app (`kubectl port-forward`; there's no public URL on a laptop) and connect your agent to Radar's MCP server. Pick your own organization, not Cloud Native Hackathon, under "Organization access". Running it again is safe: it skips what's done. `./scripts/local-cluster.sh <team-name> --down` deletes the cluster.
+
+Venue wifi is slow. Before the event, run `./scripts/local-cluster.sh --pull` to download the images and charts (about 500 MB); `--images` lists them.
+
+If your copy of this repo is older than the script, fetch it first:
+
+```bash
+curl -fsSL -o scripts/local-cluster.sh https://raw.githubusercontent.com/skyhook-io/cnh-starter/main/scripts/local-cluster.sh && chmod +x scripts/local-cluster.sh
+```
+
+### Any other cluster
+
 The same repo works on a cluster you bring (kind, k3d, minikube or a cloud cluster) with Argo CD installed, and Argo Rollouts if you use `examples/canary`:
 
 1. Connect the cluster to your own free Radar Cloud organization: sign up at [app.radarhq.io](https://app.radarhq.io), click **Connect a cluster**, and run the Helm command it gives you.
