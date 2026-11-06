@@ -432,10 +432,12 @@ radar_deploy() { # prints <namespace>/<name> of Radar's Deployment, or nothing
 }
 
 if [[ -z "$(radar_deploy)" ]]; then
-  say "Connect this cluster to Radar Cloud, in your own free organization"
-  info "1. Sign up or sign in at https://app.radarhq.io and create an organization for your team"
-  info "   if it asks (free). Invite your teammates from Settings > Members."
-  info "2. Click Connect a cluster, name the cluster $team, and copy the Helm command it shows."
+  say "Connect this cluster to Radar Cloud, in your own free organization, not Cloud Native Hackathon"
+  info "1. Sign in at https://app.radarhq.io. New to Radar Cloud: name your organization when it asks."
+  info "   Already in Cloud Native Hackathon: open the menu under your name (bottom left) >"
+  info "   Create organization. Invite your teammates from Settings > Members, and check that the"
+  info "   organization switcher shows your new organization."
+  info "2. Click Connect a cluster, name the cluster exactly $team, and copy the Helm command it shows."
   info "3. Paste it into a terminal on this laptop. kubectl's context is $ctx, so it installs"
   info "   Radar here (check: kubectl config current-context)."
   info "The command carries your cluster's token. Paste it straight into your terminal:"
@@ -539,11 +541,12 @@ cat <<EOF
     For Claude Code:
       claude mcp add radar-cloud --transport http https://api.radarhq.io/mcp
 
-    AGENTS.md describes the hackathon's cluster, so start your agent with:
+    AGENTS.md describes the hackathon's cluster: add the note from the README's "On your laptop"
+    section to the top of it. Either way, start your agent with:
       We're on a local cluster in our own Radar Cloud organization, named $team. AGENTS.md's
-      parts about the hackathon organization, the budget, the host's limits and the public URL
-      don't apply here; reach the app with kubectl port-forward. Read AGENTS.md, find our
-      cluster in Radar, and tell me what's running in $ns. Don't change anything yet.
+      parts about the hackathon organization, Prometheus, the budget, the host's limits and the
+      public URL don't apply here; reach the app with kubectl port-forward. Read AGENTS.md, find
+      our cluster in Radar, and tell me what's running in $ns. Don't change anything yet.
 
     Delete the cluster when you're done: ./scripts/local-cluster.sh $team --down
 EOF
