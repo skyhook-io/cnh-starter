@@ -1,9 +1,14 @@
 # Dependencies, configuration and one-off work
 
 Use these patterns when your project needs them. They are not judging requirements.
-Replace `team-__TEAM__` with your assigned namespace. Discover the tools your connected
-Radar advertises before using a tool: a tool described in newer Radar documentation
-may not be deployed on this cluster yet.
+This team has its own virtual cluster (vcluster), with cluster-admin access inside it.
+Replace `team-__TEAM__` with your app namespace. On Radar Cloud, call `list_clusters`,
+select the entry whose `name` exactly matches your team name, and pass its `id` as
+`cluster` on every subsequent tool call below. Never select `cnh` or another team.
+Use your app namespace unless deliberately working in another namespace in your cluster.
+Discover the tools your connected Radar advertises before using a tool: a tool
+described in newer documentation may not be deployed yet. Local OSS Radar has no
+`cluster` parameter; follow each advertised schema.
 
 ## Keep credentials out of your public repository
 
@@ -81,16 +86,25 @@ Service in `deploy/`, add them to `deploy/kustomization.yaml`, and push. Use a P
 data must survive a Pod replacement. Check the cluster's available storage and your
 quota before choosing requests; your dependency shares the team's quota with the app.
 
-If staff has allowed the chart repository in your AppProject, a chart can also be
-managed by an Argo CD Application in your team's namespace. Use an exact chart version and check its rendered resources first. Charts
-that need CRDs, cluster-wide Roles/Bindings or new namespaces do not fit the shared
-cluster's team scope; ask staff instead of requesting broader permissions. Do not run
-a direct Helm upgrade against resources already managed by Argo CD or Flux.
+Your team's AppProject allows any source repository, namespaces in your virtual
+cluster, and cluster-scoped resources. A chart can be managed by an Argo CD
+Application in namespace `team-__TEAM__`, project `team-__TEAM__`. Use an exact chart
+version and check its rendered resources first. Operators, CRDs, cluster-wide
+Roles/Bindings and additional namespaces are allowed inside your team's cluster.
+They still share its total budget and cannot bypass the host's restrictions on
+privileged, hostPath, hostNetwork or hostPID Pods. Leave the pre-installed Argo CD,
+Rollouts, Prometheus, metrics components and AppProject unchanged.
 
-On your own cluster, `manage_helm` can manage a native release when advertised.
-The owner must preconfigure the chart repository used by that Radar instance first. Upgrade values merge with stored
-values by default; full replacement requires `replace_values: true`. Keep the shared
-hackathon app's dependencies in GitOps. Native Helm is not required for this track.
+If an Application needs `CreateNamespace=true` or `ServerSideApply=true`, set its
+`syncOptions` and pass the same list as `sync_options` on every `manage_gitops` sync.
+Do not run a direct Helm upgrade against resources already managed by Argo CD or Flux.
+
+`manage_helm` can manage a native release when advertised. The owner must preconfigure
+the chart repository used by that Radar instance first; cluster-admin access does not
+configure Radar's sources. Upgrade values merge with stored values by default; full
+replacement requires `replace_values: true`. Keep the starter app and dependencies
+already owned by Argo CD in GitOps. For a separate dependency, choose one owner: a
+GitOps Application or a native Helm release. Native Helm is not required for this track.
 
 ## Inspect the running application
 
@@ -155,7 +169,7 @@ The image tag is the first seven characters of the app commit that triggered
    confirm `newName`/`newTag` identify that build. A successful build for another
    commit is not the evidence you need.
 3. Read the Argo Application with `get_resource`. Refresh/sync through `manage_gitops`
-   if necessary. Read the live Deployment (or Rollout if you changed the example)
+   if necessary, preserving any Application `syncOptions` through `sync_options`. Read the live Deployment (or Rollout if you changed the example)
    and confirm its pod-template image matches the expected tag. If not, keep waiting
    on the desired revision; don't report the existing healthy app as the new build.
 4. Use `wait_for` for rollout completion, then request your public `/api/sessions`.
@@ -175,7 +189,7 @@ that it uses the shared organization allowance and may incur billed overage if a
 owner enabled it. An existing request to investigate
 is sufficient—do not ask again for the same authorized work.
 
-- Get `cluster` from `list_clusters`, then use `get_resource` to verify the exact target.
+- Get `cluster` from the `list_clusters` entry whose `name` exactly matches your team, then use `get_resource` to verify the exact target.
 - Call `start_investigation` with, for example,
   `{"cluster":"clu_example","group":"apps","kind":"Deployment","namespace":"team-__TEAM__","name":"app"}`.
   When coming from a Radar issue, add its ID as `issue_id`; the Hub validates its target

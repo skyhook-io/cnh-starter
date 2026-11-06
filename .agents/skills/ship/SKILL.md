@@ -44,6 +44,8 @@ Then `get_resource` on the Application and check both of these:
 
 ## 4. Wait for the rollout
 
+First read the live Deployment or Rollout with `get_resource` and confirm its app container image matches the expected image/tag from the remote `deploy/kustomization.yaml`. A healthy old workload does not prove this push deployed.
+
 Call `wait_for` with `kind: deployment` (or `rollout` if `deploy/` uses `rollout.yaml`) and `name: app`. Each call waits at most 45 seconds, so repeat it until it reports done, for up to about 5 minutes.
 
 A Rollout pauses at 25% on purpose. For that flow, use the `canary-release` skill.
