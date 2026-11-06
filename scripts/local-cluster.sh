@@ -509,7 +509,9 @@ for _ in $(seq 36); do
     hinted_image=1
   fi
   conditions="$(k -n "$ns" get applications.argoproj.io app -o jsonpath='{.status.conditions[*].message}' 2>/dev/null || true)"
-  if [[ "$conditions" == *"authentication required"* && -z "$hinted_repo" ]]; then
+  # A private or missing repo: git says one or the other, depending on the repo.
+  if [[ ( "$conditions" == *"authentication required"* || "$conditions" == *"could not read Username"* ) &&
+        -z "$hinted_repo" ]]; then
     info "Argo CD can't read $repo on GitHub. Make the repo public (Settings > General >"
     info "Danger Zone > Change visibility), or check the repoURL in argocd/application.yaml."
     hinted_repo=1
