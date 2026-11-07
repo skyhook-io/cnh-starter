@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "radar-cloud": {
+      "url": "https://api.radarhq.io/mcp"
+    }
+  }
+}
