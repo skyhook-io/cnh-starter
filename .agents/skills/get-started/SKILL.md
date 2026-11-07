@@ -1,13 +1,15 @@
 ---
 name: get-started
-description: Check that this person is set up for the hackathon, explain what they see in Radar, and lay out the day, the way a coach at the Radar table would. Use when they ask to get set up, check their setup, or what to do first, when they ask what they're looking at in Radar, and at the start of a first session in this repo. Read-only.
+description: Get this person set up for the hackathon, from a fresh clone to their app live through GitOps, and lay out the day, the way a coach at the Radar table would. Use when they ask to get set up, check their setup, or what to do first, when they ask what they're looking at in Radar, and at the start of a first session in this repo.
 ---
 
 # Get set up for the hackathon
 
-Check these in order. At the first one that fails, say in a sentence or two what to do, and wait. Keep replies short. This skill only reads: change nothing in the cluster or the repo without asking.
+Check first, then set up. Keep replies short. At a check that fails, say in a sentence or two what to do, and wait.
 
-1. **Clone set up?** If `namespace:` in `deploy/kustomization.yaml` still says `team-__TEAM__`, ask for the team name they typed on the join page and offer to run `./scripts/setup.sh <team>`. It only edits this clone; push it only when they say so (README, "Ship your own code"). Otherwise the team is the part after `team-`, written `<team>` below.
+## Check (read only)
+
+1. **Team.** If `namespace:` in `deploy/kustomization.yaml` still says `team-__TEAM__`, setup.sh hasn't run: you'll run it below. Use the team name they gave you, or ask for the one they typed on the join page. It's `<team>` below.
 
 2. **Radar connected?** If you have no Radar tools, or a call says the server needs authentication, the person signs in; you can't do it for them.
    - Claude Code: if `/mcp` doesn't list radar-cloud, run `claude mcp add --scope user radar-cloud --transport http https://api.radarhq.io/mcp` in a terminal and restart Claude Code. Then `/mcp` > radar-cloud > **Authenticate**.
@@ -20,14 +22,24 @@ Check these in order. At the first one that fails, say in a sentence or two what
 
 4. **Readable?** Call `list_resources` with `kind: deployments`, `namespace: team-<team>`. If Radar refuses or can't read any namespace within a few minutes of sign-up, that's normal: access lands a minute or two after signing up. Say so, wait a minute, retry, for up to about 5 minutes. After that: check they signed in with an email the team listed, then send them to the Radar table. In Radar Cloud the same lag shows as **No Namespace Access … contact your administrator**: wait a minute and reload.
 
-   When it works, say what's running (Deployment `app`, pods ready, image), whether the Argo CD Application `app` exists in `team-<team>` (`get_resource`, group `argoproj.io`; if not, GitOps isn't started: the `ship` skill), and the URL `https://<team>.cnh.radarhq.io`.
-
 5. **The first screen.** Their cluster is the card named exactly `<team>` on Radar Cloud's Home; the rest are other teams' and the platform's (`cnh`). Call `issues` and sort it against "What every team sees" in AGENTS.md: name the known noise in a line, and point out anything else.
 
-6. **The day,** in a few lines:
-   - **Before:** Radar Cloud > the cluster > **Checks**, set **Namespace** to `team-<team>`, screenshot.
-   - **Ship** their own code through GitOps (offer the `ship` skill), then **build**: README, "What Radar can do for you".
-   - **One AI investigation** (the judges look for it; an all-clear on a healthy app counts). Open a resource in Radar Cloud, such as Deployment `app`: the small sparkle button at the top right, next to Refresh, starts it. It only says **Investigate** when the resource has a problem. The Issues page has an **Investigate** button per issue.
-   - **By 5:30:** the story from Radar: timeline, investigation, Checks before and after.
+## Set up (ask once, then run it through)
 
-   Then ask what they want to build or do first, and start nothing until they say.
+Say what's left of the list below and ask once: "Shall I set it up? I'll push to your repo and deploy through Radar." Skip what's already done (the Application `app` in `team-<team>`, `get_resource` group `argoproj.io`; `STORY.md`). When they say go, run to the end without stopping:
+
+1. If setup.sh hasn't run: `./scripts/setup.sh <team>`, then commit "Set up team <team>", `git pull --rebase`, push.
+2. Follow the `ship` skill from step 0: it waits for the build and its `deploy:` commit, checks the image is public, applies `argocd/application.yaml`, syncs, and checks that the URL shows the pushed commit.
+3. Record the "before": `get_cluster_audit` with `namespace: team-<team>`. Write `STORY.md` with a heading `## Before` (date and time, findings by severity, one line per finding: check and resource), commit and push it. Markdown alone doesn't trigger a build.
+
+Report the URL and the version it shows.
+
+## The day
+
+In a few lines:
+- **Before:** Radar Cloud > the cluster > **Checks**, set **Namespace** to `team-<team>`, screenshot.
+- **Build** what they came to build: README, "What Radar can do for you". You ship each change with the `ship` skill.
+- **One AI investigation** (the judges look for it; an all-clear on a healthy app counts). Give the resource's Radar Cloud link (AGENTS.md has the format): the sparkle button at the top right, next to Refresh, starts it. It only says **Investigate** when the resource has a problem.
+- **By 5:30:** ask you for the story (the `demo-story` skill).
+
+Then ask what they want to build.

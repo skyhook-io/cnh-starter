@@ -7,7 +7,7 @@ Start here if your team has its own cluster at the hackathon: a virtual Kubernet
 - 11:00: before you write any code, get your cluster, open it in Radar Cloud, and connect your agent to Radar (steps below).
 - First hour: open **Checks** for your cluster and take a screenshot. That's your "before".
 - All day, work through Radar: your agent pushes, syncs and waits for each rollout through Radar's MCP. When something breaks, look in Radar first, and start an AI investigation on anything you can't explain. Run at least one investigation today (the judges look for it). Nothing broke? Investigate your app after a release: it ends with an all-clear and the evidence, which counts.
-- By 5:30: tell the day's story from Radar: the timeline, the investigation, and Checks before and after. It's only there if you used Radar all day.
+- By 5:30: tell the day's story from Radar: the timeline, the investigation, and Checks before and after. It's only there if you used Radar all day. Your agent can draft it: ask it for your 5:30 story.
 - The winning team gets $4,000. Hackathon clusters and access to the hackathon org end on Friday, November 13.
 
 ## Before you start
@@ -38,7 +38,7 @@ Start your agent in your copy of this repo (below) and give it a first prompt:
 
 Every Radar MCP tool takes a `cluster` id, and your agent must pass yours on every call: the organization has about 40 clusters. AGENTS.md tells it how to find the id and how to ship.
 
-This repo also has skills for getting set up, shipping, debugging and canaries in `.agents/skills/`. Claude Code and Codex pick them up on their own.
+This repo also has skills for getting set up, shipping, debugging, canaries and the 5:30 story in `.agents/skills/`. Claude Code and Codex pick them up on their own.
 
 ## Ship your own code
 
