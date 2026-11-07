@@ -37,7 +37,7 @@ Report the URL and the version it shows.
 ## The day
 
 In a few lines:
-- **Before:** Radar Cloud > the cluster > **Checks**, set **Namespace** to `team-<team>`, screenshot.
+- **Before:** screenshot Radar Cloud > the cluster > **Checks**. The findings on the platform we installed are real Radar findings, worth a look, but not theirs to fix. Their own before and after is **Namespace** `team-<team>`.
 - **Build** what they came to build: README, "What Radar can do for you". You ship each change with the `ship` skill.
 - **One AI investigation** (the judges look for it; an all-clear on a healthy app counts). Give the resource's Radar Cloud link (AGENTS.md has the format): the sparkle button at the top right, next to Refresh, starts it. It only says **Investigate** when the resource has a problem.
 - **By 5:30:** ask you for the story (the `demo-story` skill).
