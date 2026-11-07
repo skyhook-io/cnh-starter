@@ -10,7 +10,7 @@ Deploys are GitOps: change the repo, push to `main`, and Argo CD syncs the names
 
 - **The person asks to get set up, or what to do first.** Follow the `get-started` skill. It only reads.
 - **Before anything else: is this repo set up?** If the cluster name in bold at the top of this file is still a placeholder (capital letters between double underscores) rather than a team name, `./scripts/setup.sh` hasn't run in this clone. Use the team name the person gave you, or ask for it, and run `./scripts/setup.sh <team>` (it only edits files in this clone; pushing comes later, with the `ship` skill), then read this file again. A missing team name is not an invite problem.
-- **First cluster access in a session.** Call `list_clusters`, find `__TEAM__`, and read the workloads in `team-__TEAM__` with its id. If you have no Radar tools, or they need authentication, the person signs in: in Claude Code, `/mcp` > radar-cloud > Authenticate (the `get-started` skill has the steps for other agents). If no cluster is named `__TEAM__`, the person hasn't accepted the Radar Cloud invite, or picked a different organization when connecting (no `cnh` in the list means another organization). Ask them to sign in again and pick **Cloud Native Hackathon** under "Organization access". If it's there but your calls to it are refused, and they signed up in the last few minutes, that's normal: access lands a minute or two after signing up. Wait a minute and try again, for up to about 5 minutes. After that, check that the person signed in with an email the team listed when it joined. If it's disconnected, or nothing here helps, ask an organizer at the Radar table. Don't go on until you can read the namespace.
+- **First cluster access in a session.** Call `list_clusters`, find `__TEAM__`, and read the workloads in `team-__TEAM__` with its id. If you have no Radar tools, or they need authentication, the person connects and signs in (the `get-started` skill has the steps). If no cluster is named `__TEAM__`, the person hasn't accepted the Radar Cloud invite, or picked a different organization when connecting (no `cnh` in the list means another organization). Ask them to sign in again and pick **Cloud Native Hackathon** under "Organization access". If it's there but your calls to it are refused within a few minutes of sign-up, that's normal: access lands a minute or two after signing up. Wait a minute and retry, for up to about 5 minutes. After that, check that the person signed in with an email the team listed when it joined. If it's disconnected, or nothing here helps, ask an organizer at the Radar table. Don't go on until you can read the namespace.
 - **After every push.** Follow the `ship` skill’s build-trigger rules. For a build-triggering push, confirm the `build-and-deploy` GitHub Action for the pushed application commit succeeded and produced its `deploy: <sha> [skip ci]` commit, then `git pull --rebase` it so your next push isn't rejected. Sync or inspect the Argo CD Application through Radar, confirm the live workload uses that build’s image, then wait for the rollout. A healthy old revision is not proof the push deployed. Check three things before saying it's deployed: the synced revision, workload health, and the URL showing the new version. Procedure: the `ship` skill.
 - **A deploy or the app fails.** Read the evidence first: `issues`, `get_changes`, events, logs (`diagnose` bundles them). Name the cause, then fix Argo CD-owned resources in git; non-git credential Secrets follow the agent-workflows recipe. A pod stuck `Pending` with a Warning event `SyncError` was refused by the host (see Limits). Procedure: the `debug-failure` skill.
 - **A canary is paused.** That's a release decision, not a stuck wait. Stop waiting at the pause, check the canary pods and the URL, show the person what you saw, and promote or abort only when they say so, unless they already told you to. Procedure: the `canary-release` skill.
@@ -45,16 +45,15 @@ Deploys are GitOps: change the repo, push to `main`, and Argo CD syncs the names
 
 ## What every team sees
 
-These show up on every team's cluster, and none of them is the team's problem. Don't fix them, and don't spend the team's AI investigation on them.
+Every team's cluster shows these. None is the team's to fix, or worth the team's AI investigation:
 
-- **Issue "CoreDNS service DNS rewrite"** (DNS failure) on ConfigMap `kube-system/coredns`. The rewrite rule is the vcluster's own DNS setup. Leave it.
-- **About 5 Warning events from the cluster's first minute:** readiness and startup probes failing, and `FailedMount` for `kube-root-ca.crt`, on the CoreDNS, CloudNativePG, Argo Rollouts and Prometheus pods. They stopped once the cluster was up.
-- **"9 of 10 Deployments available."** `argocd/argocd-applicationset-controller` is scaled to 0 on purpose.
-- **Node CPU and memory gauges** show the shared host nodes, not this team's budget. The budget (see Limits) is enforced on the host, so it doesn't show inside the cluster.
-- **Checks without a namespace filter** is mostly the pre-installed platform: "Workload managed by Helm but not GitOps" on Argo CD, Argo Rollouts, Prometheus, CloudNativePG and Radar, plus single replicas, missing probes and auto-mounted service account tokens on those. Filter to `team-__TEAM__`, plus any namespace you added. Checks also calls Secret `kubeconfig` in `default` unused: it's the person's kubectl access, so keep it.
-- **"N can upgrade Radar"** on every cluster card, and a newer chart for Helm release `radar`. Don't upgrade. The hackathon runs Radar 1.19 on purpose: 1.20 flags the starter's HTTPRoute, because its Gateway lives on the host.
-- **The bell and the Alerts page** list alerts from every team's cluster, not just this one.
-- **Every team's cluster in the cluster list.** Only `__TEAM__` is this team's.
+- Issue "CoreDNS service DNS rewrite" on `kube-system/coredns`: the vcluster's own DNS setup.
+- About 5 Warning events (probes, `FailedMount` of `kube-root-ca.crt`) from the cluster's first minute.
+- "9 of 10 Deployments available": `argocd-applicationset-controller` is scaled to 0 on purpose.
+- Node CPU and memory gauges: the shared host nodes, not the team's budget.
+- Checks without a namespace filter: mostly the pre-installed platform ("managed by Helm but not GitOps" and more). Filter to `team-__TEAM__` plus namespaces you added. Secret `default/kubeconfig` shows as unused: it's the person's kubectl access, keep it.
+- "Can upgrade Radar" on every cluster card: don't. Radar 1.19 is on purpose (1.20 flags the starter's HTTPRoute, whose Gateway is on the host).
+- The bell and Alerts: every team's alerts, not just this one's.
 
 ## Application workflows
 

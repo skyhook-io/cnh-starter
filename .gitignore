@@ -6,9 +6,6 @@
 *.pem
 *.key
 
-# Your agent's own settings for this clone (Claude Code writes it when you approve radar-cloud).
-.claude/settings.local.json
-
 node_modules/
 npm-debug.log*
 .DS_Store

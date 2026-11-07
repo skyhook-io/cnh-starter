@@ -1,8 +1,0 @@
-{
-  "mcpServers": {
-    "radar-cloud": {
-      "type": "http",
-      "url": "https://api.radarhq.io/mcp"
-    }
-  }
-}

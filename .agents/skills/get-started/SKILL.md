@@ -5,61 +5,29 @@ description: Check that this person is set up for the hackathon, explain what th
 
 # Get set up for the hackathon
 
-Coach the person through their first minutes. Check the steps below in order. At the first one that fails, say in a sentence or two what to do, and wait for them. Keep replies short.
+Check these in order. At the first one that fails, say in a sentence or two what to do, and wait. Keep replies short. This skill only reads: change nothing in the cluster or the repo without asking.
 
-This skill only reads. Don't change the cluster or the repo without asking first.
+1. **Clone set up?** If `namespace:` in `deploy/kustomization.yaml` still says `team-__TEAM__`, ask for the team name they typed on the join page and offer to run `./scripts/setup.sh <team>`. It only edits this clone; push it only when they say so (README, "Ship your own code"). Otherwise the team is the part after `team-`, written `<team>` below.
 
-## 1. Is this clone set up?
+2. **Radar connected?** If you have no Radar tools, or a call says the server needs authentication, the person signs in; you can't do it for them.
+   - Claude Code: if `/mcp` doesn't list radar-cloud, run `claude mcp add --scope user radar-cloud --transport http https://api.radarhq.io/mcp` in a terminal and restart Claude Code. Then `/mcp` > radar-cloud > **Authenticate**.
+   - Codex: `codex mcp add radar-cloud --url https://api.radarhq.io/mcp`, then restart Codex.
+   - Other agents: in Radar Cloud, open **Agents** and pick theirs.
 
-Read `namespace:` in `deploy/kustomization.yaml`. If it still says `team-__TEAM__`, `./scripts/setup.sh` hasn't run in this clone. Ask for the team name they typed on the join page, and offer to run `./scripts/setup.sh <team>`. It only edits files in this clone. Then it needs a commit and push (README, "Ship your own code", step 2): do that only when they say so.
+   In the browser they sign in with the email their team listed, and under **Organization access** choose **Cloud Native Hackathon**.
 
-Otherwise the team is the part after `team-`. It's `<team>` below.
+3. **Cluster found?** Call `list_clusters` and take the entry whose `name` is exactly `<team>`; its `id` is the `cluster` for every other call. If it's missing and so is `cnh`, the sign-in went to another organization: sign in again (`/mcp` > radar-cloud) and choose Cloud Native Hackathon. If it isn't offered, they haven't accepted the invite email yet. If `cnh` is there but `<team>` isn't, check the spelling and `https://join.cnh.radarhq.io/status/<team>`.
 
-## 2. Is Radar connected?
+4. **Readable?** Call `list_resources` with `kind: deployments`, `namespace: team-<team>`. If Radar refuses or can't read any namespace within a few minutes of sign-up, that's normal: access lands a minute or two after signing up. Say so, wait a minute, retry, for up to about 5 minutes. After that: check they signed in with an email the team listed, then send them to the Radar table. In Radar Cloud the same lag shows as **No Namespace Access … contact your administrator**: wait a minute and reload.
 
-If you have no Radar tools (`list_clusters` and the others), or a call says the server needs authentication, the person has to sign in. You can't do it for them.
+   When it works, say what's running (Deployment `app`, pods ready, image), whether the Argo CD Application `app` exists in `team-<team>` (`get_resource`, group `argoproj.io`; if not, GitOps isn't started: the `ship` skill), and the URL `https://<team>.cnh.radarhq.io`.
 
-- **Claude Code:** run `/mcp`, pick **radar-cloud**, then **Authenticate**. If `/mcp` doesn't list radar-cloud, it was skipped when Claude Code asked. Quit, run `claude mcp reset-project-choices` in this folder, start `claude` again, and choose **Use this MCP server**.
-- **Codex:** run `codex mcp add radar-cloud --url https://api.radarhq.io/mcp` in a terminal. It opens the browser to sign in. Then restart Codex.
-- **Cursor:** Settings > Tools & MCP > radar-cloud > **Connect**.
-- **VS Code:** open `.vscode/mcp.json` and click **Start** above radar-cloud.
-- **Another agent:** in Radar Cloud, open **Agents** and pick it.
+5. **The first screen.** Their cluster is the card named exactly `<team>` on Radar Cloud's Home; the rest are other teams' and the platform's (`cnh`). Call `issues` and sort it against "What every team sees" in AGENTS.md: name the known noise in a line, and point out anything else.
 
-A browser opens. They sign in with the email their team listed on the join page, and under **Organization access** they choose **Cloud Native Hackathon**. Then they come back here.
+6. **The day,** in a few lines:
+   - **Before:** Radar Cloud > the cluster > **Checks**, set **Namespace** to `team-<team>`, screenshot.
+   - **Ship** their own code through GitOps (offer the `ship` skill), then **build**: README, "What Radar can do for you".
+   - **One AI investigation** (the judges look for it; an all-clear on a healthy app counts). Open a resource in Radar Cloud, such as Deployment `app`: the small sparkle button at the top right, next to Refresh, starts it. It only says **Investigate** when the resource has a problem. The Issues page has an **Investigate** button per issue.
+   - **By 5:30:** the story from Radar: timeline, investigation, Checks before and after.
 
-## 3. Find the team's cluster
-
-Call `list_clusters`. Take the entry whose `name` is exactly `<team>`. Its `id` is the `cluster` for every other call.
-
-If there's none:
-- **No `cnh` in the list either:** the connection went to another organization. They sign in again (Claude Code: `/mcp` > radar-cloud) and choose **Cloud Native Hackathon**. If it isn't offered, they haven't accepted the invite yet: open the invite email and sign in at app.radarhq.io.
-- **`cnh` is there, but not `<team>`:** check the spelling. Then check `https://join.cnh.radarhq.io/status/<team>`: the cluster appears once that page says it's set up.
-
-## 4. Can you read it?
-
-Call `list_resources` with `kind: deployments` and `namespace: team-<team>`.
-
-If Radar refuses, or says it can't read any namespace, and they signed up in the last few minutes, that's normal: access lands a minute or two after signing up. Say so, wait about a minute, and try again, for up to about 5 minutes. If it still fails, check they signed in with an email the team listed. If they did, send them to the Radar table.
-
-When it works, say what's running: Deployment `app`, how many pods are ready, and its image. Check whether the Argo CD Application `app` exists in `team-<team>` (`get_resource`, group `argoproj.io`). If it doesn't, GitOps hasn't started yet: that's step 5 of the README's "Ship your own code", or the `ship` skill. Their app is at `https://<team>.cnh.radarhq.io`.
-
-## 5. Explain the first screen
-
-Tell them:
-- Their cluster is the card named exactly `<team>` on Radar Cloud's Home. The other cards are other teams' clusters, and `cnh` is the platform's.
-- If the cluster says **No Namespace Access … contact your administrator** right after they signed up, wait a minute and reload.
-- Some of what Radar shows on a new cluster isn't theirs to fix. Go through "What every team sees" in AGENTS.md in a few lines.
-
-Call `issues` with the cluster id. Sort what it returns into the known items from that list and the rest. Point out anything in `team-<team>`, or anything else not on the list.
-
-## 6. Lay out the day
-
-In a few lines, from the README's "The day":
-
-1. **Before:** in Radar Cloud, open the cluster, then **Checks**. Set **Namespace** to `team-<team>` and take a screenshot. Unfiltered, the list is mostly the pre-installed platform.
-2. **Ship:** start GitOps and see their commit live at the URL. Offer to do it with the `ship` skill.
-3. **Build:** pick what the project needs from the README's "What Radar can do for you".
-4. **Investigate once:** the judges look for at least one AI investigation, and an all-clear on a healthy app counts. In Radar Cloud, open a resource, such as Deployment `app`. The small sparkle button at the top right, next to Refresh, starts one. It only says **Investigate** when the resource has a problem. The Issues page has an **Investigate** button on each issue too.
-5. **By 5:30:** tell the story from Radar: the timeline, the investigation, and Checks before and after.
-
-Then ask what they want to build, or what to do first. Start nothing until they say.
+   Then ask what they want to build or do first, and start nothing until they say.

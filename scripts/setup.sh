@@ -52,11 +52,7 @@ Next:
   2. Once the first build finishes, check the image is public: on your repo's GitHub page, open
      Packages (right-hand column) and your image. It usually already says Public. If it says
      Private, open Package settings > Change visibility > Public: the cluster can't pull a private one.
-  3. Start your coding agent in this folder. Claude Code: run claude, and when it asks about
-     radar-cloud, choose "Use this MCP server". Then run /mcp, pick radar-cloud, Authenticate,
-     and choose Cloud Native Hackathon under "Organization access". Then ask it:
-       Get me set up for the hackathon. Our team is ${team}.
-  4. Create the Argo CD Application in argocd/application.yaml. Ask your agent to apply it
+  3. Create the Argo CD Application in argocd/application.yaml. Ask your agent to apply it
      through Radar's MCP server, or apply it from Radar Cloud.
-  5. Open https://${team}.cnh.radarhq.io: it shows your commit's version.
+  4. Open https://${team}.cnh.radarhq.io: it shows your commit's version.
 EOF

@@ -536,10 +536,10 @@ cat <<EOF
       kubectl -n $ns port-forward svc/app 8080:80
     and open http://localhost:8080.
 
-    Connect your coding agent to Radar's MCP server. This repo already names it (radar-cloud):
-    start your agent in this folder. Claude Code asks about radar-cloud: choose "Use this MCP
-    server", then run /mcp, pick radar-cloud and Authenticate. Other agents: README, "Connect your
-    agent". Under "Organization access" pick your own organization, not Cloud Native Hackathon.
+    Connect your coding agent to Radar's MCP server. In Radar Cloud, open Agents and pick your
+    client; under "Organization access" pick your own organization, not Cloud Native Hackathon.
+    For Claude Code:
+      claude mcp add radar-cloud --transport http https://api.radarhq.io/mcp
 
     AGENTS.md describes the hackathon's cluster: add the note from the README's "On your laptop"
     section to the top of it. Either way, start your agent with:

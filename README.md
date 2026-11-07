@@ -5,25 +5,40 @@ Start here if your team has its own cluster at the hackathon: a virtual Kubernet
 ## The day
 
 - 11:00: before you write any code, get your cluster, open it in Radar Cloud, and connect your agent to Radar (steps below).
-- First hour: open **Checks** for your cluster, set **Namespace** to `team-<team-name>`, and take a screenshot. That's your "before".
+- First hour: open **Checks** for your cluster and take a screenshot. That's your "before".
 - All day, work through Radar: your agent pushes, syncs and waits for each rollout through Radar's MCP. When something breaks, look in Radar first, and start an AI investigation on anything you can't explain. Run at least one investigation today (the judges look for it). Nothing broke? Investigate your app after a release: it ends with an all-clear and the evidence, which counts.
-- **Where Investigate is:** in Radar Cloud, open a resource, such as your Deployment `app`. At the top right, next to Refresh, a small sparkle button starts an investigation. It only says **Investigate** when the resource has a problem. The **Issues** page has an **Investigate** button on each issue too.
 - By 5:30: tell the day's story from Radar: the timeline, the investigation, and Checks before and after. It's only there if you used Radar all day.
 - The winning team gets $4,000. Hackathon clusters and access to the hackathon org end on Friday, November 13.
 
 ## Before you start
 
-Get your team's cluster at **join.cnh.radarhq.io** (the join code is shared at the kickoff and on the Radar table). It takes 3 to 4 minutes, longer when many teams join at once; `join.cnh.radarhq.io/status/<team-name>` shows the progress and says when it's ready. Then you have:
+Get your team's cluster at **join.cnh.radarhq.io** (the join code is shared at the kickoff and on the Radar table). It takes 3 to 4 minutes; `join.cnh.radarhq.io/status/<team-name>` shows the progress and says when it's ready. Then you have:
 
 - your own cluster, named `<team-name>` in Radar Cloud,
 - this starter app already running in it, in namespace `team-<team-name>`, at `https://<team-name>.cnh.radarhq.io`,
 - an invite for each of you to the hackathon's organization in Radar Cloud. Accept it and sign in at [app.radarhq.io](https://app.radarhq.io).
 
-Your cluster is the card named after your team on Radar Cloud's Home. Right after you sign up, it can say **No Namespace Access … contact your administrator**: your access is still on its way. Wait a minute and reload.
-
 **Joining a team that already started?** Don't fill in the join form or copy the template again: ask your team for the repo, and ask us at the Radar table to add your email.
 
 Every team is in the same Radar Cloud organization, so Radar Cloud lists every team's cluster, each under its team's name, plus a cluster named `cnh`, the platform's own cluster. You only have access to your own team's cluster. The member list (with emails), the Alerts page and the bell (each alert's resource, namespace and status), and any investigation you mark **Shared** are visible to every team. Investigations start private: only the person who started one can open it. So that person shows it at 5:30, or shares it on purpose, and then every team can read it. Alert notifications are off for the event, because they would go to everyone.
+
+## Connect your agent
+
+For Claude Code, run this once, from any folder:
+
+```bash
+claude mcp add --scope user radar-cloud --transport http https://api.radarhq.io/mcp
+```
+
+Then, in Claude Code, run `/mcp`, pick **radar-cloud** and **Authenticate**: it opens your browser. Under "Organization access", pick **Cloud Native Hackathon**. Another agent? In Radar Cloud, open **Agents** and pick yours.
+
+Start your agent in your copy of this repo (below) and give it a first prompt:
+
+> Get me set up for the hackathon. Our team is <team-name>.
+
+Every Radar MCP tool takes a `cluster` id, and your agent must pass yours on every call: the organization has about 40 clusters. AGENTS.md tells it how to find the id and how to ship.
+
+This repo also has skills for getting set up, shipping, debugging and canaries in `.agents/skills/`. Claude Code and Codex pick them up on their own.
 
 ## Ship your own code
 
@@ -35,44 +50,10 @@ Every team is in the same Radar Cloud organization, so Radar Cloud lists every t
    ```
    The `git pull` picks up a commit the Action may already have made when GitHub created your repo. The Action builds the image and pushes it to GHCR. Wait for it to go green (the repo's **Actions** tab).
 3. **Check the image is public.** On your repo's GitHub page, open **Packages** (right-hand column) and your image: it should say **Public**, and usually already does. If it says **Private**, open **Package settings** > **Change visibility** > **Public**, because your cluster can't pull a private image.
-4. **Connect your agent** (next section).
-5. **Start GitOps.** Ask your agent to apply `argocd/application.yaml` to your cluster through Radar's MCP server. Argo CD takes over the starter app and from then on deploys every push to `main`.
-6. **Check it's yours.** Open `https://<team-name>.cnh.radarhq.io`. It shows `version` and the first 7 characters of the commit you pushed: the Action tags the image with it. The bot's `deploy:` commit after yours has its own SHA; ignore that one.
+4. **Start GitOps.** Ask your agent to apply `argocd/application.yaml` to your cluster through Radar's MCP server. Argo CD takes over the starter app and from then on deploys every push to `main`.
+5. **Check it's yours.** Open `https://<team-name>.cnh.radarhq.io`. It shows `version` and the first 7 characters of the commit you pushed: the Action tags the image with it. The bot's `deploy:` commit after yours has its own SHA; ignore that one.
 
-One person can do steps 1 to 3 while the others accept their invites. Then everyone clones the team's repo and connects their own agent in it.
-
-## Connect your agent
-
-This repo tells your agent where Radar's MCP server is (`radar-cloud`), so there's no command to run. For Claude Code:
-
-1. Start it in your clone: `claude`. It asks about radar-cloud: choose **Use this MCP server**. The highlighted answer, "Continue without", skips Radar.
-2. Run `/mcp`, pick **radar-cloud**, then **Authenticate**. Your browser opens.
-3. Sign in with the email your team listed, and under **Organization access** choose **Cloud Native Hackathon**.
-
-Other agents:
-- **Codex:** `codex mcp add radar-cloud --url https://api.radarhq.io/mcp`. It opens your browser to sign in.
-- **Cursor** and **VS Code** read radar-cloud from this repo too. Cursor: Settings > Tools & MCP > radar-cloud > **Connect**. VS Code: open `.vscode/mcp.json` and click **Start** above radar-cloud.
-- **Anything else:** in Radar Cloud, open **Agents** and pick yours.
-
-Then give it a first prompt:
-
-> Get me set up for the hackathon. Our team is <team-name>.
-
-It checks your clone and your connection, finds your cluster, explains what you're looking at, and lays out the day. It changes nothing without asking.
-
-Every Radar MCP tool takes a `cluster` id, and your agent must pass yours on every call: the organization has about 40 clusters. AGENTS.md tells it how to find the id and how to ship. This repo also has skills for getting set up, shipping, debugging and canaries in `.agents/skills/`. Claude Code and Codex pick them up on their own.
-
-## What isn't your problem
-
-Every team's new cluster shows these. Ignore them, and don't spend your AI investigation on them:
-
-- An issue **"CoreDNS service DNS rewrite"** (DNS failure) on `kube-system/coredns`. That's the vcluster's own DNS setup.
-- **About 5 Warning events** from the cluster's first minute (probes and mounts while it started).
-- **"9 of 10 Deployments available."** One Argo CD part is scaled to 0 on purpose.
-- **The CPU and memory gauges** show the shared host nodes, not your budget (see [Your cluster](#your-cluster)).
-- **Checks without a filter** is mostly the pre-installed platform, for example "Workload managed by Helm but not GitOps" on Argo CD, Prometheus, CloudNativePG and Radar. Set **Namespace** to `team-<team-name>`.
-- **"Can upgrade Radar"** on every cluster card. Don't: the hackathon runs Radar 1.19 on purpose.
-- **The bell and Alerts** show every team's alerts, not just yours.
+One person can do this while the others accept their invites.
 
 ## API keys and other secrets
 
@@ -130,7 +111,7 @@ One real decision Radar helped you make is enough. More features don't score hig
 
 ## Your cluster
 
-Already installed: Argo CD in namespace `argocd`, Argo Rollouts, the Gateway API CRDs, metrics for `kubectl top` and the HPA, Prometheus in namespace `monitoring`, the CloudNativePG operator in `cnpg-system`, and Radar itself in `radar`. Leave Radar as it is: don't upgrade or remove it. The hackathon runs Radar 1.19 on purpose, because 1.20 flags the starter's HTTPRoute (its Gateway lives on the host). Argo CD has no web UI here: see and sync your Applications in Radar Cloud, or through your agent. It picks up Applications in `team-*` namespaces, and your Argo CD project is `team-<team-name>`.
+Already installed: Argo CD in namespace `argocd`, Argo Rollouts, the Gateway API CRDs, metrics for `kubectl top` and the HPA, Prometheus in namespace `monitoring`, the CloudNativePG operator in `cnpg-system`, and Radar in `radar` (don't upgrade it). Argo CD has no web UI here: see and sync your Applications in Radar Cloud, or through your agent. It picks up Applications in `team-*` namespaces, and your Argo CD project is `team-<team-name>`.
 
 **Metrics history.** Prometheus (`monitoring/prometheus-server`) scrapes your pods' CPU, memory and network, the kubelet, kube-state-metrics, and any pod or Service annotated `prometheus.io/scrape: "true"` (plus `prometheus.io/port` and `prometheus.io/path` if it isn't `/metrics`), every 30 seconds, and keeps 7 days. Radar finds it on its own: workloads get metric charts in Radar Cloud, and your agent can call `discover_metrics` to see what's there and `query_prometheus` to run PromQL. It doesn't count against your budget. It sees only your cluster. There's no node-exporter (the host refuses it) and no Alertmanager.
 
@@ -184,9 +165,7 @@ It talks to `https://<team-name>.vc.cnh.radarhq.io`. Its token lasts 24 hours an
 
 ## When something's wrong
 
-- **Your agent has no Radar tools.** In Claude Code, run `/mcp`. If radar-cloud says it needs authentication, pick it, then **Authenticate**. If radar-cloud isn't listed, you chose "Continue without" when Claude Code asked: quit, run `claude mcp reset-project-choices` in your clone, start `claude` again, and choose **Use this MCP server**.
-- **Your agent can't find your cluster.** Check that you accepted the invite with an email your team listed when it joined, and that you picked **Cloud Native Hackathon** under "Organization access" when you signed in to the MCP server. To sign in again in Claude Code: `/mcp` > radar-cloud. Your cluster is named exactly `<team-name>`.
-- **Radar says "No Namespace Access" for your own cluster.** Right after you sign up, that's normal: wait a minute and reload. If it lasts more than 5 minutes, come to the Radar table.
+- **Your agent can't find your cluster.** Check that you accepted the invite with an email your team listed when it joined, and that you picked **Cloud Native Hackathon** under "Organization access" when you connected the MCP server. Your cluster is named exactly `<team-name>`.
 - **A pod stays `Pending`.** Read its events in Radar. A `SyncError` means the host refused it (see [Your cluster](#your-cluster)): `exceeded quota: team-quota` means you're over your budget; otherwise it asks for privileged or host access.
 - **The URL answers 404 or 503 while your pods are healthy.** Check Service `app` in `team-<team-name>`: port 80, and a selector that matches your ready pods.
 - **kubectl says `Unauthorized`.** The token expired. Copy `config` again.
@@ -195,7 +174,7 @@ It talks to `https://<team-name>.vc.cnh.radarhq.io`. Its token lasts 24 hours an
   curl -fsSL https://get.radarhq.io | sh
   kubectl radar --kubeconfig ~/cnh-kubeconfig
   ```
-  Its MCP server is `http://localhost:9280/mcp`. For Claude Code, run this in your clone: `claude mcp add radar-local --transport http http://localhost:9280/mcp`. It sees only your cluster, so its tools take no `cluster`.
+  Its MCP server is `http://localhost:9280/mcp`. For Claude Code: `claude mcp add radar-local --transport http http://localhost:9280/mcp`. It sees only your cluster, so its tools take no `cluster`.
 
 ## Bringing a cluster of your own instead
 
