@@ -1,11 +1,17 @@
 ---
 name: get-started
-description: Get this person set up for the hackathon, from a fresh clone to their app live through GitOps, and lay out the day, the way a coach at the Radar table would. Use when they ask to get set up, check their setup, or what to do first, when they ask what they're looking at in Radar, and at the start of a first session in this repo.
+description: Get this person set up for the hackathon, from creating their team's repo to their app live through GitOps, and lay out the day, the way a coach at the Radar table would. Use when they ask to get set up, check their setup, or what to do first, when they ask what they're looking at in Radar, and at the start of a first session in this repo.
 ---
 
 # Get set up for the hackathon
 
-Check first, then set up. Keep replies short. At a check that fails, say in a sentence or two what to do, and wait.
+For new-team setup, start with **Create the team repository**. For a setup check or an existing team clone, start at **Check**. Keep replies short. At a check that fails, say in a sentence or two what to do, and wait.
+
+## Create the team repository
+
+1. **Name and account.** First ask what to name the team's GitHub repo and confirm the account or organization that will own it. Use the team name already provided in the setup prompt.
+2. **Approve setup once.** Name the public `<owner>/<repo>` and ask for approval to create it, publish the setup changes and container image, and connect and deploy the app through Radar. Explain that future changes to `main` deploy automatically. Include any required pull request and merge in that approval.
+3. **Create and clone immediately.** Create the public repo from `skyhook-io/cnh-starter`, then clone that new repo. Continue in that clone. Do this before local configuration, Radar checks, or recording the baseline. Don't search the machine for other copies or prepare a separate preview clone.
 
 ## Check (read only)
 
@@ -26,7 +32,7 @@ Check first, then set up. Keep replies short. At a check that fails, say in a se
 
 ## Set up (ask once, then run it through)
 
-Say what's left of the list below and ask once: "Shall I set it up? I'll push to your repo and deploy through Radar." Skip what's already done (the Application `app` in `team-<team>`, `get_resource` group `argoproj.io`; `STORY.md`). When they say go, run to the end without stopping:
+Skip what's already done (the Application `app` in `team-<team>`, `get_resource` group `argoproj.io`; `STORY.md`). Use the approval from **Create the team repository** for the actions it covers. For any remaining unapproved actions, say what's left and ask once: "Shall I set it up? I'll push to your repo and deploy through Radar." Once approved, run to the end without stopping:
 
 1. If setup.sh hasn't run: `./scripts/setup.sh <team>`, then commit "Set up team <team>", `git pull --rebase`, push.
 2. Follow the `ship` skill from step 0: it waits for the build and its `deploy:` commit, applies `argocd/application.yaml`, syncs, waits for the new pods (which proves the image is public), and checks that the URL shows the pushed commit.
